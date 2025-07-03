@@ -1,4 +1,4 @@
-import { farcasterFrame as miniAppConnector } from "@farcaster/frame-wagmi-connector";
+import { farcasterFrame as miniAppConnector } from "@farcaster/miniapp-wagmi-connector";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createConfig, http, WagmiProvider } from "wagmi";
 import { base } from "wagmi/chains";
@@ -13,7 +13,7 @@ export const config = createConfig({
 
 const queryClient = new QueryClient();
 
-export default function FrameWalletProvider({
+export default function MiniAppWalletProvider({
   children,
 }: {
   children: React.ReactNode;

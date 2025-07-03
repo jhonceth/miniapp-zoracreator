@@ -1,7 +1,7 @@
 "use client";
-import { AddMiniAppResult } from "@farcaster/frame-core/dist/actions/AddMiniApp";
-import { FrameContext } from "@farcaster/frame-core/dist/context";
-import { sdk } from "@farcaster/frame-sdk";
+import { AddMiniAppResult } from "@farcaster/miniapp-core/dist/actions/AddMiniApp";
+import { MiniAppContext } from "@farcaster/miniapp-core/dist/context";
+import { sdk } from "@farcaster/miniapp-sdk";
 import {
   createContext,
   useCallback,
@@ -10,16 +10,17 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import FrameWalletProvider from "./frame-wallet-context";
+import MiniAppWalletContext from "./miniapp-wallet-context";
+import MiniAppWalletProvider from "./miniapp-wallet-context";
 
 interface MiniAppContextType {
   isMiniAppReady: boolean;
-  context: FrameContext | null;
+  context: MiniAppContext | null;
   setMiniAppReady: () => void;
   addMiniApp: () => Promise<AddMiniAppResult | null>;
 }
 
-const MiniAppContext = createContext<MiniAppContextType | undefined>(undefined);
+const FarcasterMiniAppContext = createContext<MiniAppContextType | undefined>(undefined);
 
 export function MiniAppProvider({
   addMiniAppOnLoad,
@@ -28,7 +29,7 @@ export function MiniAppProvider({
   addMiniAppOnLoad?: boolean;
   children: ReactNode;
 }) {
-  const [context, setContext] = useState<FrameContext | null>(null);
+  const [context, setContext] = useState<MiniAppContext | null>(null);
   const [isMiniAppReady, setIsMiniAppReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,7 +37,7 @@ export function MiniAppProvider({
     try {
       const context = await sdk.context;
       if (context) {
-        setContext(context as FrameContext);
+        setContext(context as MiniAppContext);
       } else {
         setError("Failed to load Farcaster context");
       }
@@ -59,7 +60,7 @@ export function MiniAppProvider({
 
   const handleAddMiniApp = useCallback(async () => {
     try {
-      const result = await sdk.actions.addFrame();
+      const result = await sdk.actions.addMiniApp();
       if (result) {
         return result;
       }
@@ -83,7 +84,7 @@ export function MiniAppProvider({
   ]);
 
   return (
-    <MiniAppContext.Provider
+    <FarcasterMiniAppContext.Provider
       value={{
         isMiniAppReady,
         setMiniAppReady,
@@ -91,13 +92,13 @@ export function MiniAppProvider({
         context,
       }}
     >
-      <FrameWalletProvider>{children}</FrameWalletProvider>
-    </MiniAppContext.Provider>
+      <MiniAppWalletProvider>{children}</MiniAppWalletProvider>
+    </FarcasterMiniAppContext.Provider>
   );
 }
 
 export function useMiniApp() {
-  const context = useContext(MiniAppContext);
+  const context = useContext(FarcasterMiniAppContext);
   if (context === undefined) {
     throw new Error("useMiniApp must be used within a MiniAppProvider");
   }

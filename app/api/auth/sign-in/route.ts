@@ -1,10 +1,10 @@
 import { Errors, createClient } from "@farcaster/quick-auth";
 
 import { env } from "@/lib/env";
+import { fetchUser } from "@/lib/neynar";
 import * as jose from "jose";
 import { NextRequest, NextResponse } from "next/server";
 import { Address, zeroAddress } from "viem";
-import { fetchUser } from "@/lib/neynar";
 
 export const dynamic = "force-dynamic";
 
