@@ -23,6 +23,7 @@ const UserProviderContext = createContext<
         error: Error | null;
       };
       signIn: () => Promise<void>;
+      signOut: () => Promise<void>;
       isLoading: boolean;
       error: Error | null;
     }
@@ -64,8 +65,12 @@ export const UserProvider = ({
     retry: false,
     enabled: true,
     ...{
-      onSuccess: () => {
+      onSuccess: (data: NeynarUser) => {
+        console.log("✅ User data loaded successfully:", data);
         setIsSignedIn(true);
+      },
+      onError: (error: unknown) => {
+        console.error("❌ Error loading user data:", error);
       },
     },
   });
@@ -117,6 +122,30 @@ export const UserProvider = ({
     }
   }, [context, signIn]);
 
+  const handleSignOut = useCallback(async () => {
+    try {
+      console.log("handleSignOut");
+      setIsLoading(true);
+      setError(null);
+
+      // Clear the signed in state
+      setIsSignedIn(false);
+      
+      // Clear any stored tokens or session data
+      // This will force the user to re-authenticate
+      localStorage.removeItem('farcaster-auth-token');
+      sessionStorage.clear();
+      
+      // Reload the page to clear all state
+      window.location.reload();
+    } catch (error) {
+      console.error("Error signing out:", error);
+      setError(new Error("Failed to sign out"));
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (context && !isSignedIn && !isLoading && autoSignIn && userError) {
       handleSignIn();
@@ -132,6 +161,7 @@ export const UserProvider = ({
         error: userError,
       },
       signIn: handleSignIn,
+      signOut: handleSignOut,
       isLoading,
       error,
     };
@@ -140,6 +170,7 @@ export const UserProvider = ({
     isFetchingUser,
     userError,
     handleSignIn,
+    handleSignOut,
     isLoading,
     error,
     refetchUser,

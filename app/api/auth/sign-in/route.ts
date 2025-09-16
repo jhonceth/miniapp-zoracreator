@@ -16,22 +16,32 @@ export const POST = async (req: NextRequest) => {
   let isValidSignature;
   let walletAddress: Address = zeroAddress;
   let expirationTime = Date.now() + 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
-  // Verify signature matches custody address and auth address
+  
+  // Verificar signature real de Farcaster
   try {
+    const domain = new URL(env.NEXT_PUBLIC_URL).hostname;
+    console.log("🔍 Verificando token con dominio:", domain);
+    
     const payload = await quickAuthClient.verifyJwt({
-      domain: new URL(env.NEXT_PUBLIC_URL).hostname,
+      domain: domain,
       token: farcasterToken,
     });
     isValidSignature = !!payload;
     fid = Number(payload.sub);
     walletAddress = payload.address as `0x${string}`;
     expirationTime = payload.exp ?? Date.now() + 7 * 24 * 60 * 60 * 1000;
+    console.log("✅ Token Farcaster verificado correctamente:", { fid, walletAddress });
   } catch (e) {
     if (e instanceof Errors.InvalidTokenError) {
-      console.error("Invalid token", e);
+      console.error("❌ Token inválido:", e.message);
+      console.error("❌ Detalles del error:", {
+        domain: new URL(env.NEXT_PUBLIC_URL).hostname,
+        url: env.NEXT_PUBLIC_URL,
+        appEnv: env.NEXT_PUBLIC_APP_ENV
+      });
       isValidSignature = false;
     }
-    console.error("Error verifying token", e);
+    console.error("❌ Error verificando token:", e);
   }
 
   if (!isValidSignature || !fid) {
@@ -41,7 +51,19 @@ export const POST = async (req: NextRequest) => {
     );
   }
 
-  const user = await fetchUser(fid.toString());
+  const user = await fetchUser(fid.toString()).catch(async (error) => {
+    console.warn("⚠️ Error fetching user from Neynar, using basic user data:", error.message);
+    
+    // Usar datos básicos del token de Farcaster si Neynar falla
+    return {
+      fid: fid.toString(),
+      username: `user_${fid}`,
+      display_name: `Usuario ${fid}`,
+      pfp_url: "https://picsum.photos/200/200?random=" + fid,
+      custody_address: walletAddress || "0x0000000000000000000000000000000000000000",
+      verifications: walletAddress ? [walletAddress] : []
+    };
+  });
 
   // Generate JWT token
   const secret = new TextEncoder().encode(env.JWT_SECRET);

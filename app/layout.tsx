@@ -6,8 +6,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Farcaster Mini-app Starter",
-  description: "A starter for Farcaster mini-apps",
+  title: "Zora Token Creator",
+  description: "Create tokens on Base using Zora Protocol",
 };
 
 export default function RootLayout({

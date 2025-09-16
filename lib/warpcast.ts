@@ -6,14 +6,19 @@ import { env } from "@/lib/env";
  * @returns The farcaster manifest for the frame
  */
 export async function getFarcasterManifest() {
-  let frameName = "Mini-app Starter";
+  let frameName = "Create ZoraCoin";
   let noindex = false;
   const appUrl = env.NEXT_PUBLIC_URL;
+  
+  // Detectar si estamos en un túnel de desarrollo
   if (appUrl.includes("localhost")) {
     frameName += " Local";
     noindex = true;
   } else if (appUrl.includes("ngrok")) {
     frameName += " NGROK";
+    noindex = true;
+  } else if (appUrl.includes("trycloudflare.com")) {
+    frameName += " Cloudflare Tunnel";
     noindex = true;
   } else if (appUrl.includes("https://dev.")) {
     frameName += " Dev";
@@ -31,18 +36,18 @@ export async function getFarcasterManifest() {
       iconUrl: `${appUrl}/images/icon.png`,
       homeUrl: appUrl,
       imageUrl: `${appUrl}/images/feed.png`,
-      buttonTitle: `Launch App`,
+      buttonTitle: `Launch You ZoraCoin`,
       splashImageUrl: `${appUrl}/images/splash.png`,
-      splashBackgroundColor: "#FFFFFF",
+      splashBackgroundColor: "#855DCD",
       webhookUrl: `${appUrl}/api/webhook`,
       // Metadata https://github.com/farcasterxyz/miniapps/discussions/191
-      subtitle: "Starter kit for mini-apps", // 30 characters, no emojis or special characters, short description under app name
-      description: "Starter kit for mini-apps", // 170 characters, no emojis or special characters, promotional message displayed on Mini App Page
-      primaryCategory: "social",
-      tags: ["mini-app", "starter"], // up to 5 tags, filtering/search tags
+      subtitle: "Launch your coin on Zora", // 30 characters, no emojis or special characters, short description under app name
+      description: "Empowering creators: Use our mini-app to create and launch your own coin on Zora directly from Farcaster.", // 170 characters, no emojis or special characters, promotional message displayed on Mini App Page
+      primaryCategory: "finance",
+      tags: ["nft-zora", "zora", "zora-coin", "zora-protocol", "token"], // up to 5 tags, filtering/search tags
       tagline: "Starter kit for mini-apps", // 30 characters, marketing tagline should be punchy and descriptive
       ogTitle: `${frameName}`, // 30 characters, app name + short tag, Title case, no emojis
-      ogDescription: "Starter kit for Farcastermini-apps", // 100 characters, summarize core benefits in 1-2 lines
+      ogDescription: "create coin on Zora directly from Farcaster", // 100 characters, summarize core benefits in 1-2 lines
       screenshotUrls: [
         // 1284 x 2778, visual previews of the app, max 3 screenshots
         `${appUrl}/images/feed.png`,
