@@ -3,17 +3,13 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Alert, AlertDescription } from "@/components/ui/alert"
 import { 
   Copy, 
   ExternalLink, 
   CheckCircle, 
   Zap, 
   Network, 
-  DollarSign, 
-  Rocket, 
   Share2, 
-  Download, 
   Twitter, 
   Calendar,
   User,
@@ -45,176 +41,38 @@ export function RealTokenDisplay({ token, onCreateAnother }: RealTokenDisplayPro
   }
 
   const shareOnTwitter = () => {
-    const text = `🚀 Just deployed "${token.name}" ($${token.symbol}) on ${token.network || "Base"}!\n\nContract: ${token.address}\n\nView on ZBase Analytics: https://zbase.fun/token/${token.address}`
+    const base = typeof window !== 'undefined' ? window.location.origin : ''
+    const shareUrl = `${base}/share/new-token/${token.address}?v=${Date.now()}`
+    const text = `🚀 Just created a new token!\n\n"${token.name}" ($${token.symbol}) on ${token.network || "Base"}\n\nCreated: ${new Date().toLocaleDateString()}\nCreator: ${token.creatorAddress?.slice(0, 6)}...${token.creatorAddress?.slice(-4) || "Unknown"}\n\nCheck it out: ${shareUrl}`
     const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`
     window.open(url, '_blank')
   }
 
   const shareOnFarcaster = () => {
-    const text = `🚀 Just deployed "${token.name}" ($${token.symbol}) on ${token.network || "Base"}!\n\nContract: ${token.address}\n\nView on ZBase Analytics: https://app.zbase.fun/token/${token.address}`
-    const url = `https://warpcast.com/~/compose?text=${encodeURIComponent(text)}`
-    window.open(url, '_blank')
-  }
-
-  const downloadTokenCard = () => {
-    // Create a canvas to generate the token card image
-    const canvas = document.createElement('canvas')
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
-
-    canvas.width = 1200
-    canvas.height = 630
-
-    // Background gradient
-    const gradient = ctx.createLinearGradient(0, 0, 1200, 630)
-    gradient.addColorStop(0, '#8b5cf6')
-    gradient.addColorStop(0.5, '#ec4899')
-    gradient.addColorStop(1, '#f59e0b')
-    ctx.fillStyle = gradient
-    ctx.fillRect(0, 0, 1200, 630)
-
-    // Add subtle pattern overlay
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.1)'
-    for (let i = 0; i < 1200; i += 40) {
-      for (let j = 0; j < 630; j += 40) {
-        ctx.fillRect(i, j, 2, 2)
-      }
-    }
-
-    // Function to load and draw token image
-    const loadAndDrawTokenImage = () => {
-      return new Promise((resolve) => {
-        if (token.imageUrl) {
-          const img = new Image()
-          img.crossOrigin = 'anonymous'
-          img.onload = () => {
-            // Draw token image in larger circle
-            ctx.save()
-            ctx.beginPath()
-            ctx.arc(150, 150, 100, 0, 2 * Math.PI)
-            ctx.clip()
-            ctx.drawImage(img, 50, 50, 200, 200)
-            ctx.restore()
-            resolve(true)
-          }
-          img.onerror = () => {
-            // Fallback to symbol if image fails
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)'
-            ctx.beginPath()
-            ctx.arc(150, 150, 100, 0, 2 * Math.PI)
-            ctx.fill()
-            
-            ctx.fillStyle = 'white'
-            ctx.font = 'bold 48px Arial'
-            ctx.textAlign = 'center'
-            ctx.fillText(token.symbol.charAt(0).toUpperCase(), 150, 165)
-            resolve(false)
-          }
-          img.src = token.imageUrl
+    const base = typeof window !== 'undefined' ? window.location.origin : ''
+    const url = `${base}/share/new-token/${token.address}?v=${Date.now()}`
+    const intent = `https://warpcast.com/~/compose?text=${encodeURIComponent(`🚀 Just created a new token!\n\n"${token.name}" ($${token.symbol}) on ${token.network || "Base"}\n\nCreated: ${new Date().toLocaleDateString()}\nCreator: ${token.creatorAddress?.slice(0, 6)}...${token.creatorAddress?.slice(-4) || "Unknown"}\n\nCheck it out: ${url}`)}&embeds[]=${encodeURIComponent(url)}`
+    
+    // Intento con Mini App composeCast si está disponible
+    try {
+      // dynamic import to avoid SSR issues
+      import("@farcaster/miniapp-sdk").then(({ sdk }) => {
+        if (sdk?.actions?.composeCast) {
+          sdk.actions.composeCast({
+            text: `🚀 Just created a new token!\n\n"${token.name}" ($${token.symbol}) on ${token.network || "Base"}\n\nCreated: ${new Date().toLocaleDateString()}\nCreator: ${token.creatorAddress?.slice(0, 6)}...${token.creatorAddress?.slice(-4) || "Unknown"}\n\nCheck it out: ${url}`,
+            embeds: [url],
+          })
         } else {
-          // No image, use symbol
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.2)'
-          ctx.beginPath()
-          ctx.arc(150, 150, 100, 0, 2 * Math.PI)
-          ctx.fill()
-          
-          ctx.fillStyle = 'white'
-          ctx.font = 'bold 48px Arial'
-          ctx.textAlign = 'center'
-          ctx.fillText(token.symbol.charAt(0).toUpperCase(), 150, 165)
-          resolve(false)
+          window.open(intent, '_blank')
         }
+      }).catch(() => {
+        window.open(intent, '_blank')
       })
+    } catch {
+      window.open(intent, '_blank')
     }
-
-    // Function to generate simple QR code
-    const generateSimpleQR = (text: string, x: number, y: number, size: number) => {
-      // Simple QR-like pattern (in real implementation, you'd use a QR library)
-      const cellSize = size / 25
-      
-      // Draw QR background
-      ctx.fillStyle = 'white'
-      ctx.fillRect(x, y, size, size)
-      
-      // Draw QR pattern (simplified)
-      ctx.fillStyle = 'black'
-      for (let i = 0; i < 25; i++) {
-        for (let j = 0; j < 25; j++) {
-          if ((i + j) % 3 === 0 || (i === 0 || i === 24 || j === 0 || j === 24)) {
-            ctx.fillRect(x + i * cellSize, y + j * cellSize, cellSize, cellSize)
-          }
-        }
-      }
-      
-      // Add URL text below QR
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'
-      ctx.font = '12px Arial'
-      ctx.textAlign = 'center'
-      ctx.fillText('Scan to view', x + size/2, y + size + 20)
-    }
-
-    // Main drawing function
-    const drawCard = async () => {
-      // Load token image first
-      await loadAndDrawTokenImage()
-
-      // Add token name (much larger)
-      ctx.fillStyle = 'white'
-      ctx.textAlign = 'left'
-      ctx.font = 'bold 96px Arial'
-      ctx.fillText(token.name, 300, 120)
-      
-      // Add token symbol (larger)
-      ctx.font = 'bold 48px Arial'
-      ctx.fillText(token.symbol, 300, 180)
-      
-      // Add network badge
-      ctx.fillStyle = isMainnet ? 'rgba(34, 197, 94, 0.9)' : 'rgba(249, 115, 22, 0.9)'
-      ctx.fillRect(300, 200, 140, 35)
-      ctx.fillStyle = 'white'
-      ctx.font = 'bold 18px Arial'
-      ctx.textAlign = 'center'
-      ctx.fillText(isMainnet ? 'MAINNET' : 'TESTNET', 370, 222)
-      
-      // Add contract info (full address)
-      ctx.textAlign = 'left'
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'
-      ctx.font = '20px Arial'
-      ctx.fillText(`Contract: ${token.address}`, 300, 260)
-      
-      // Add deployment date (in the middle)
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.9)'
-      ctx.font = 'bold 28px Arial'
-      ctx.textAlign = 'center'
-      ctx.fillText(`Deployed: ${new Date().toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-      })}`, 600, 400)
-
-      // Add website at the bottom
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.7)'
-      ctx.font = 'bold 32px Arial'
-      ctx.textAlign = 'center'
-      ctx.fillText('zbase.fun', 600, 550)
-      
-      ctx.font = '20px Arial'
-      ctx.fillText('Live Zora Coin Analytics', 600, 580)
-
-      // Generate QR code
-      const profileUrl = `https://zbase.fun/token/${token.address}`
-      generateSimpleQR(profileUrl, 1000, 100, 150)
-
-      // Download the image
-      const link = document.createElement('a')
-      link.download = `${token.symbol}-${token.name}-token-card.png`
-      link.href = canvas.toDataURL('image/png', 1.0)
-      link.click()
-    }
-
-    // Start drawing
-    drawCard()
   }
+
 
   const getProfileUrl = () => {
     return `https://zbase.fun/token/${token.address}`
@@ -329,35 +187,27 @@ export function RealTokenDisplay({ token, onCreateAnother }: RealTokenDisplayPro
               </p>
             </div>
 
-            {/* Simple Actions */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-4">
-              <Button asChild variant="outline" className="h-auto p-4">
+            {/* Simple Actions - Mobile Optimized */}
+            <div className="flex gap-2 pt-4">
+              <Button asChild variant="outline" className="flex-1 h-12">
                 <a
                   href={token.explorer || `https://sepolia.basescan.org/address/${token.address}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex flex-col items-center gap-2"
+                  className="flex items-center justify-center gap-2"
                 >
-                  <ExternalLink className="h-5 w-5" />
-                  <div className="text-center">
-                    <div className="font-medium">View on Explorer</div>
-                    <div className="text-xs text-muted-foreground">
-                      Verify on blockchain
-                    </div>
-                  </div>
+                  <ExternalLink className="h-4 w-4" />
+                  <span className="text-sm font-medium">Explorer</span>
                 </a>
               </Button>
 
               <Button 
                 onClick={onCreateAnother}
-                className="h-auto p-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                className="flex-1 h-12 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
               >
-                <Rocket className="h-5 w-5" />
-                <div className="text-center">
-                  <div className="font-medium">Create Another Token</div>
-                  <div className="text-xs text-white/80">
-                    Deploy more tokens
-                  </div>
+                <div className="flex items-center justify-center gap-2">
+                  <Rocket className="h-4 w-4" />
+                  <span className="text-sm font-medium">Create Another</span>
                 </div>
               </Button>
             </div>
@@ -416,230 +266,163 @@ export function RealTokenDisplay({ token, onCreateAnother }: RealTokenDisplayPro
         </div>
 
         <CardContent className="p-6 space-y-6">
-          {/* Token Details Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+          {/* Token Details - Compact Layout */}
+          <div className="space-y-4">
+            {/* Contract Address */}
+            <div className="flex items-center gap-3">
+              <label className="text-sm font-medium text-muted-foreground flex items-center gap-2 min-w-fit">
                 <FileText className="w-4 h-4" />
-                Contract Address
+                Contract
               </label>
-              <div className="flex items-center gap-2">
-                <p className="font-mono text-sm bg-muted p-3 rounded-lg flex-1 break-all">
+              <p className="font-mono text-sm bg-muted p-3 rounded-lg flex-1">
                   {formatAddress(token.address)}
                 </p>
                 <Button
                   variant="outline"
                   size="sm"
+                asChild
+                className="w-10 h-10 p-1"
+              >
+                <a
+                  href={`https://basescan.org/address/${token.address}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center"
+                >
+                  <img src="/bscan.png" alt="BaseScan" className="w-6 h-6 object-contain" />
+                </a>
+              </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() => copyToClipboard(token.address, "address")}
+                className="w-10 h-10 p-1"
                 >
                   {copiedField === "address" ? (
-                    <CheckCircle className="h-4 w-4" />
+                  <CheckCircle className="h-5 w-5" />
                   ) : (
-                    <Copy className="h-4 w-4" />
+                  <Copy className="h-5 w-5" />
                   )}
                 </Button>
-              </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            {/* Network */}
+            <div className="flex items-center gap-3">
+              <label className="text-sm font-medium text-muted-foreground flex items-center gap-2 min-w-fit">
                 <Network className="w-4 h-4" />
                 Network
               </label>
-              <div className="flex items-center gap-2">
-                <p className="font-mono text-sm bg-muted p-3 rounded-lg flex-1">
+              <div className="flex items-center gap-2 bg-muted p-3 rounded-lg flex-1">
+                <img src="/base.png" alt="Base Mainnet" className="w-4 h-4" />
+                <p className="font-mono text-sm">
                   {token.network || "Base Mainnet"}
                 </p>
-                <Badge variant="outline">
-                  {isMainnet ? "Production" : "Testnet"}
-                </Badge>
               </div>
             </div>
 
+            {/* Transaction Hash */}
             {token.transactionHash && (
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <div className="flex items-center gap-3">
+                <label className="text-sm font-medium text-muted-foreground flex items-center gap-2 min-w-fit">
                   <Zap className="w-4 h-4" />
-                  Transaction Hash
+                  Hash TX
                 </label>
-                <div className="flex items-center gap-2">
-                  <p className="font-mono text-sm bg-muted p-3 rounded-lg flex-1 break-all">
+                <p className="font-mono text-sm bg-muted p-3 rounded-lg flex-1">
                     {formatAddress(token.transactionHash)}
                   </p>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => copyToClipboard(token.transactionHash!, "hash")}
+                    asChild
+                    className="w-10 h-10 p-1"
                   >
-                    {copiedField === "hash" ? (
-                      <CheckCircle className="h-4 w-4" />
-                    ) : (
-                      <Copy className="h-4 w-4" />
-                    )}
+                    <a
+                      href={`https://basescan.org/tx/${token.transactionHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center"
+                    >
+                      <img src="/bscan.png" alt="BaseScan" className="w-6 h-6 object-contain" />
+                    </a>
                   </Button>
-                </div>
-              </div>
-            )}
-
-            {token.poolAddress && (
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <DollarSign className="w-4 h-4" />
-                  Pool Address
-                </label>
-                <div className="flex items-center gap-2">
-                  <p className="font-mono text-sm bg-muted p-3 rounded-lg flex-1 break-all">
-                    {formatAddress(token.poolAddress)}
-                  </p>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => copyToClipboard(token.poolAddress!, "pool")}
+                    onClick={() => copyToClipboard(token.transactionHash!, "hash")}
+                    className="w-10 h-10 p-1"
                   >
-                    {copiedField === "pool" ? (
-                      <CheckCircle className="h-4 w-4" />
+                    {copiedField === "hash" ? (
+                      <CheckCircle className="h-5 w-5" />
                     ) : (
-                      <Copy className="h-4 w-4" />
+                      <Copy className="h-5 w-5" />
                     )}
                   </Button>
-                </div>
               </div>
             )}
           </div>
 
-          {/* Action Buttons */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-            {/* View on Explorer */}
-            <Button asChild variant="outline" className="h-auto p-4">
-              <a
-                href={token.explorer || `https://basescan.org/address/${token.address}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex flex-col items-center gap-2"
+          {/* Action Buttons - Improved Design */}
+          <div className="space-y-4">
+            {/* Share Buttons Row - Horizontal */}
+            <div className="flex gap-3">
+              {/* Share Image on Farcaster */}
+              <Button 
+                onClick={shareOnFarcaster}
+                variant="outline" 
+                className="flex-1 h-14 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 border-0 text-white"
               >
-                <ExternalLink className="h-5 w-5" />
-                <div className="text-center">
-                  <div className="font-medium">View on Explorer</div>
-                  <div className="text-xs text-muted-foreground">
-                    Verify on blockchain
-                  </div>
+                <div className="flex items-center justify-center gap-3">
+                  <img 
+                    src="/farcaster.png" 
+                    alt="Farcaster" 
+                    className="w-5 h-5"
+                    onError={(e) => {
+                      console.log('Error loading farcaster.png:', e);
+                      e.currentTarget.src = '/icon.png'; // fallback
+                    }}
+                  />
+                  <span className="font-medium">Share</span>
                 </div>
-              </a>
-            </Button>
-
-            {/* View Profile - Only for Mainnet */}
-            {isMainnet && (
-              <Button asChild variant="outline" className="h-auto p-4">
-                <a
-                  href={getProfileUrl()}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex flex-col items-center gap-2"
-                >
-                  <Globe className="h-5 w-5" />
-                  <div className="text-center">
-                    <div className="font-medium">View Profile</div>
-                    <div className="text-xs text-muted-foreground">
-                      Token details page
-                    </div>
-                  </div>
-                </a>
               </Button>
-            )}
 
-            {/* Share on Twitter */}
+              {/* Share Image on X */}
             <Button 
               onClick={shareOnTwitter}
               variant="outline" 
-              className="h-auto p-4"
+                className="flex-1 h-14 bg-black hover:bg-gray-800 border-gray-600 text-white"
             >
-              <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center gap-3">
                 <img 
                   src="/x.png" 
                   alt="X (Twitter)" 
                   className="w-5 h-5"
                 />
-                <div className="text-center">
-                  <div className="font-medium">Share on X</div>
-                  <div className="text-xs text-muted-foreground">
-                    Post to X.com
-                  </div>
-                </div>
-              </div>
-            </Button>
-
-            {/* Share on Farcaster */}
-            <Button 
-              onClick={shareOnFarcaster}
-              variant="outline" 
-              className="h-auto p-4"
-            >
-              <div className="flex items-center gap-2">
-                <img 
-                  src="/farcaster.png" 
-                  alt="Farcaster" 
-                  className="w-5 h-5"
-                />
-                <div className="text-center">
-                  <div className="font-medium">Share on Farcaster</div>
-                  <div className="text-xs text-muted-foreground">
-                    Post to Farcaster
-                  </div>
-                </div>
+                  <span className="font-medium">Share</span>
               </div>
             </Button>
           </div>
 
-          {/* Additional Actions */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {/* Download Token Card */}
-            <Button 
-              onClick={downloadTokenCard}
-              className="h-auto p-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-            >
-              <Download className="h-5 w-5" />
-              <div className="text-center">
-                <div className="font-medium">Download Token Card</div>
-                <div className="text-xs text-white/80">
-                  Save as image
-                </div>
-              </div>
+            {/* Profile Button - Only for Mainnet */}
+            {isMainnet && (
+              <div className="flex justify-center">
+                <Button asChild variant="outline" className="h-14 px-8 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 border-0 text-white">
+                  <a
+                    href={getProfileUrl()}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-3"
+                  >
+                    <img src="/minicon.png" alt="Profile" className="w-5 h-5" />
+                    <span className="font-medium">View Profile</span>
+                  </a>
             </Button>
+              </div>
+            )}
 
-            {/* Create Another Token */}
-            <Button 
-              onClick={onCreateAnother}
-              variant="outline"
-              className="h-auto p-4"
-            >
-              <Rocket className="h-5 w-5" />
-              <div className="text-center">
-                <div className="font-medium">Create Another Token</div>
-                <div className="text-xs text-muted-foreground">
-                  Deploy more tokens
-                </div>
-              </div>
-            </Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* Important Notes */}
-      <Alert className="border-blue-200 bg-blue-50">
-        <DollarSign className="h-4 w-4 text-blue-600" />
-        <AlertDescription className="text-blue-800">
-          <strong>Important Information:</strong>
-          <ul className="list-disc list-inside mt-2 space-y-1">
-            <li>Your token has been permanently deployed on {token.network || "Base"}</li>
-            <li>The contract address is unique and immutable</li>
-            <li>You can add liquidity and enable trading</li>
-            <li>Save this information for future reference</li>
-                         {isMainnet && (
-               <li>Your token profile is available at: <a href={getProfileUrl()} target="_blank" rel="noopener noreferrer" className="underline">ZBase Analytics</a></li>
-             )}
-          </ul>
-        </AlertDescription>
-      </Alert>
     </div>
   )
 }
