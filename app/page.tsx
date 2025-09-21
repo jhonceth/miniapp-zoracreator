@@ -8,7 +8,7 @@ const frame = {
   version: "next",
   imageUrl: `${appUrl}/images/feed.png`,
   button: {
-    title: "Crear Token",
+    title: "Launch ZoraCoin",
     action: {
       type: "launch_frame",
       name: "Zora Token Creator",

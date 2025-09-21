@@ -3,8 +3,8 @@ import { Metadata } from "next";
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: "Create Token",
-    description: "Create Token",
+    title: "Launch Coin",
+    description: "Launch Coin",
   };
 }
 

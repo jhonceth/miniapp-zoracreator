@@ -1,11 +1,12 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { useAccount, useWriteContract, useWaitForTransactionReceipt, useChainId, useSendTransaction } from "wagmi"
 import { prepareZoraDeploymentAction } from "@/lib/zora-deployment-server"
 import { getCoinCreateFromLogs } from "@zoralabs/coins-sdk"
 import { base, baseSepolia } from "viem/chains"
 import type { TokenFormData, CreatedToken } from "@/types/launch"
+import { createSerializableImageData, getSpecificErrorMessage, validateImageFile } from "@/lib/image-validation"
 
 // Función para detectar si el error es por cancelación del usuario
 const isUserRejectedError = (error: any): boolean => {
@@ -98,6 +99,7 @@ export function useDeployment() {
   const [progress, setProgress] = useState(0)
   const [deploymentError, setDeploymentError] = useState<string | null>(null)
   const [isUserCancelled, setIsUserCancelled] = useState(false)
+  const [hasProcessedError, setHasProcessedError] = useState(false)
 
   // Network validation
   const isSupportedChain = (chainId === base.id) || (chainId === baseSepolia.id)
@@ -119,26 +121,24 @@ export function useDeployment() {
       throw new Error("Imagen requerida")
     }
 
+    // VALIDAR IMAGEN ANTES de serializar (evita procesar imágenes gigantes)
+    const imageValidation = validateImageFile(formData.image)
+    if (!imageValidation.isValid) {
+      throw new Error(imageValidation.error)
+    }
+
     try {
       setIsPreparingDeployment(true)
       setDeploymentError(null)
       setIsUserCancelled(false)
+      setHasProcessedError(false)
       setProgress(10)
 
       console.log("🚀 Iniciando deployment con Zora SDK...")
 
-      // Convertir File a ArrayBuffer para serialización
+      // Usar función centralizada para crear datos serializables
       setProgress(20)
-      const imageArrayBuffer = await formData.image.arrayBuffer()
-      const imageUint8Array = new Uint8Array(imageArrayBuffer)
-      
-      // Crear objeto serializable para Server Action
-      const serializableImageData = {
-        name: formData.image.name,
-        type: formData.image.type,
-        size: formData.image.size,
-        data: Array.from(imageUint8Array), // Convertir a array normal para serialización
-      }
+      const serializableImageData = await createSerializableImageData(formData.image)
 
       // Preparar deployment usando Zora SDK
       setProgress(30)
@@ -219,28 +219,8 @@ export function useDeployment() {
         resetWriteContract()
         resetSendTransaction()
       } else {
-        // Manejar errores específicos de IPFS
-        let errorMessage = "Unknown error"
-        
-        if (error instanceof Error) {
-          const errorText = error.message.toLowerCase()
-          
-          if (errorText.includes("webp")) {
-            errorMessage = "WebP format is not supported. Please use PNG, JPEG, JPG, GIF or SVG format."
-          } else if (errorText.includes("image must be") || errorText.includes("format")) {
-            errorMessage = "Image format error. Please use PNG, JPEG, JPG, GIF or SVG format."
-          } else if (errorText.includes("too large") || errorText.includes("size")) {
-            errorMessage = "Image file is too large. Please use an image smaller than 5MB."
-          } else if (errorText.includes("failed to upload file")) {
-            errorMessage = "IPFS upload failed. This might be due to network issues or file size. Please try again with a smaller image or check your connection."
-          } else if (errorText.includes("service unavailable") || errorText.includes("timeout")) {
-            errorMessage = "IPFS service is temporarily unavailable. Please try again in a few minutes."
-          } else if (errorText.includes("empty")) {
-            errorMessage = "Image file is empty. Please select a valid image."
-          } else {
-            errorMessage = error.message
-          }
-        }
+        // Usar función centralizada para obtener mensaje de error específico
+        const errorMessage = getSpecificErrorMessage(error)
         
         setDeploymentError(errorMessage)
       }
@@ -332,26 +312,35 @@ export function useDeployment() {
     setDeploymentError(null)
     setIsPreparingDeployment(false)
     setIsUserCancelled(false)
+    setHasProcessedError(false)
     resetWriteContract()
     resetSendTransaction()
   }, [resetWriteContract, resetSendTransaction])
 
-  // Manejar errores de wagmi
+  // Manejar errores de wagmi con useEffect para evitar re-renders infinitos
   const wagmiError = writeError || sendError || receiptError
   let finalError = deploymentError
 
-  if (wagmiError) {
-    if (isUserRejectedError(wagmiError)) {
-      finalError = "❌ Transacción cancelada por el usuario"
-      setIsUserCancelled(true)
-      setIsPreparingDeployment(false)
-      setProgress(0)
-      // Resetear el estado de wagmi para permitir reintentar
-      resetWriteContract()
-    } else {
-      finalError = wagmiError.message || "Error en la transacción"
+  useEffect(() => {
+    if (wagmiError && !hasProcessedError) {
+      if (isUserRejectedError(wagmiError)) {
+        setDeploymentError("❌ Transaction cancelled by user")
+        setIsUserCancelled(true)
+        setIsPreparingDeployment(false)
+        setProgress(0)
+        setHasProcessedError(true)
+        // Resetear el estado de wagmi para permitir reintentar
+        resetWriteContract()
+        resetSendTransaction()
+      } else {
+        setDeploymentError(wagmiError.message || "Transaction error")
+        setHasProcessedError(true)
+      }
     }
-  }
+  }, [wagmiError, hasProcessedError, resetWriteContract, resetSendTransaction])
+
+  // Usar el error del estado en lugar de calcularlo en cada render
+  finalError = deploymentError
 
   // Determinar si el botón debe estar deshabilitado
   // Si el usuario canceló, no considerar isPending como deshabilitante

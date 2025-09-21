@@ -187,7 +187,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ addr
             textShadow: "2px 2px 4px rgba(0, 0, 0, 0.5)",
           }}
         >
-          STATISTICS
+          PERFORMANCE METRICS
         </div>
 
         {/* Top Section - Price and Holders */}
@@ -206,7 +206,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ addr
             zIndex: 2,
           }}
         >
-          {/* Overlay negro para mejorar legibilidad del texto */}
+          {/* Overlay negro semi-transparente para mejorar legibilidad del texto */}
           <div
             style={{
               display: "flex",
@@ -215,7 +215,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ addr
               left: 0,
               right: 0,
               bottom: 0,
-              background: "rgba(0, 0, 0, 0.3)",
+              background: "rgba(0, 0, 0, 0.6)",
               zIndex: 1,
             }}
           />
@@ -262,7 +262,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ addr
             display: "flex",
             alignItems: "center",
             padding: "40px 60px",
-            background: "rgba(0, 0, 0, 0.8)",
+            background: "rgba(0, 0, 0, 0.85)",
             color: "#F9FAFB",
             height: "50%",
             gap: "40px",
@@ -271,6 +271,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ addr
             left: 0,
             right: 0,
             zIndex: 3,
+            backdropFilter: "blur(10px)",
           }}
         >
           {/* Logo and Name Container */}

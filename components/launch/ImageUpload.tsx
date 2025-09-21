@@ -7,11 +7,7 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Upload, X, AlertTriangle } from "lucide-react"
-
-interface ImageUploadProps {
-  onImageSelect: (file: File | null) => void
-  error?: string
-}
+import { validateImageFile, IMAGE_VALIDATION_CONFIG } from "@/lib/image-validation";
 
 export function ImageUpload({ onImageSelect, error }: ImageUploadProps) {
   const [preview, setPreview] = useState<string | null>(null)
@@ -26,14 +22,10 @@ export function ImageUpload({ onImageSelect, error }: ImageUploadProps) {
       const file = files[0]
       setUploadError("")
 
-      // Validate file size (1MB limit)
-      if (file.size > 1 * 1024 * 1024) {
-        setUploadError("El archivo debe ser menor a 1MB")
-        return
-      }
-
-      if (!file.type.startsWith("image/")) {
-        setUploadError("Por favor selecciona un archivo de imagen válido")
+      // Usar validación centralizada
+      const validation = validateImageFile(file)
+      if (!validation.isValid) {
+        setUploadError(validation.error || "Invalid image file")
         return
       }
 
@@ -48,12 +40,12 @@ export function ImageUpload({ onImageSelect, error }: ImageUploadProps) {
           setUploading(false)
         }
         reader.onerror = () => {
-          setUploadError("Error al leer el archivo")
+          setUploadError("Error reading file")
           setUploading(false)
         }
         reader.readAsDataURL(file)
       } catch (err) {
-        setUploadError("Error al procesar la imagen")
+        setUploadError("Error processing image")
         setUploading(false)
       }
     },
@@ -128,12 +120,12 @@ export function ImageUpload({ onImageSelect, error }: ImageUploadProps) {
             </TooltipTrigger>
             <TooltipContent>
               <p className="text-sm">Click to upload or drag and drop</p>
-              <p className="text-xs text-gray-300">PNG, JPG, GIF up to 1MB</p>
+              <p className="text-xs text-gray-300">{IMAGE_VALIDATION_CONFIG.UI_INFO.SUPPORTED_FORMATS_TEXT}</p>
             </TooltipContent>
           </Tooltip>
         ) : (
           <Card className="p-2">
-            <div className="relative">
+            <div className="relative group">
               <div className="w-24 h-24 mx-auto">
                 <img
                   src={preview || "/placeholder.svg"}
@@ -141,8 +133,14 @@ export function ImageUpload({ onImageSelect, error }: ImageUploadProps) {
                   className="w-full h-full object-cover rounded-lg border-2 border-purple-200"
                 />
               </div>
-              <Button variant="destructive" size="sm" className="absolute top-1 right-1 h-6 w-6 p-0" onClick={removeImage}>
-                <X className="w-3 h-3" />
+              <Button 
+                variant="destructive" 
+                size="sm" 
+                className="absolute -top-1 -right-1 h-7 w-7 p-0 rounded-full bg-white/90 hover:bg-white shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110 z-50 border border-red-200" 
+                onClick={removeImage}
+                title="Remove image"
+              >
+                <X className="w-4 h-4 text-red-600" />
               </Button>
             </div>
           </Card>

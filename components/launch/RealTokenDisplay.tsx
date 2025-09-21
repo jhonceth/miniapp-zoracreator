@@ -51,7 +51,7 @@ export function RealTokenDisplay({ token, onCreateAnother }: RealTokenDisplayPro
   const shareOnFarcaster = () => {
     const base = typeof window !== 'undefined' ? window.location.origin : ''
     const url = `${base}/share/new-token/${token.address}?v=${Date.now()}`
-    const intent = `https://warpcast.com/~/compose?text=${encodeURIComponent(`🚀 Just created a new token!\n\n"${token.name}" ($${token.symbol}) on ${token.network || "Base"}\n\nCreated: ${new Date().toLocaleDateString()}\nCreator: ${token.creatorAddress?.slice(0, 6)}...${token.creatorAddress?.slice(-4) || "Unknown"}\n\nCheck it out: ${url}`)}&embeds[]=${encodeURIComponent(url)}`
+    const intent = `https://warpcast.com/~/compose?text=${encodeURIComponent(`🚀 Just created a new Coin in Zora !\n\n"${token.name}" ( $${token.symbol} ) on Base Mainnet\n\n${url}`)}&embeds[]=${encodeURIComponent(url)}`
     
     // Intento con Mini App composeCast si está disponible
     try {
@@ -59,7 +59,7 @@ export function RealTokenDisplay({ token, onCreateAnother }: RealTokenDisplayPro
       import("@farcaster/miniapp-sdk").then(({ sdk }) => {
         if (sdk?.actions?.composeCast) {
           sdk.actions.composeCast({
-            text: `🚀 Just created a new token!\n\n"${token.name}" ($${token.symbol}) on ${token.network || "Base"}\n\nCreated: ${new Date().toLocaleDateString()}\nCreator: ${token.creatorAddress?.slice(0, 6)}...${token.creatorAddress?.slice(-4) || "Unknown"}\n\nCheck it out: ${url}`,
+            text: `🚀 Just created a new Coin in Zora !\n\n"${token.name}" ( $${token.symbol} ) on Base Mainnet\n\n${url}`,
             embeds: [url],
           })
         } else {
@@ -206,7 +206,7 @@ export function RealTokenDisplay({ token, onCreateAnother }: RealTokenDisplayPro
                 className="flex-1 h-12 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
               >
                 <div className="flex items-center justify-center gap-2">
-                  <Rocket className="h-4 w-4" />
+                  <Zap className="h-4 w-4" />
                   <span className="text-sm font-medium">Create Another</span>
                 </div>
               </Button>

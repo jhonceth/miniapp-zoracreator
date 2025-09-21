@@ -1,7 +1,7 @@
 /*
   Imagen OG dinámica para compartir tokens recién creados en Farcaster Mini Apps
   - Formato 3:2 (1200x800)
-  - Enfoque en celebración: "NEW TOKEN CREATED"
+  - Enfoque en celebración: "NEW COIN CREATED"
   - Incluye: nombre, símbolo, fecha, creador
   - Cache-Control recomendado para feeds
 */
@@ -20,7 +20,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ addr
   const height = 800
 
   try {
-    let coinName = "New Token"
+    let coinName = "New ZoraCoin"
     let coinSymbol = ""
     let creatorAddress = "Unknown"
     let createdAt = new Date().toISOString()
@@ -85,26 +85,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ addr
           />
         </div>
 
-        {/* Top Left Icon */}
-        <div
-          style={{
-            display: "flex",
-            position: "absolute",
-            top: "20px",
-            left: "20px",
-            zIndex: 10,
-          }}
-        >
-          <img
-            src={`${req.nextUrl.origin}/icon.png`}
-            width={80}
-            height={80}
-            style={{
-              borderRadius: "8px",
-              objectFit: "contain",
-            }}
-          />
-        </div>
 
         {/* Main Content */}
         <div
@@ -143,7 +123,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ addr
                 border: "2px solid rgba(255, 255, 255, 0.2)",
               }}
             >
-              🎉 NEW TOKEN CREATED! 🎉
+              🎉 NEW COIN CREATED IN ZORA! 🎉
             </div>
           </div>
 
@@ -154,12 +134,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ addr
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              background: "rgba(255, 255, 255, 0.95)",
-              borderRadius: "20px",
-              padding: "40px",
+              background: "linear-gradient(135deg, #9333EA 0%, #EC4899 50%, #9333EA 100%)",
+              borderRadius: "25px",
+              padding: "60px",
               boxShadow: "0 20px 40px rgba(0, 0, 0, 0.3)",
-              maxWidth: "800px",
+              maxWidth: "900px",
               width: "100%",
+              position: "relative",
             }}
           >
             {/* Token Logo */}
@@ -168,12 +149,12 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ addr
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                width: "120px",
-                height: "120px",
-                borderRadius: "50%",
+                width: "180px",
+                height: "180px",
+                borderRadius: "20px",
                 background: "linear-gradient(135deg, #10B981, #059669)",
-                marginBottom: "30px",
-                border: "4px solid #FFFFFF",
+                marginBottom: "40px",
+                border: "6px solid #FFFFFF",
                 boxShadow: "0 10px 20px rgba(0, 0, 0, 0.2)",
               }}
             >
@@ -183,7 +164,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ addr
                   style={{
                     width: "100%",
                     height: "100%",
-                    borderRadius: "50%",
+                    borderRadius: "20px",
                     objectFit: "cover",
                   }}
                 />
@@ -193,8 +174,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ addr
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    fontSize: "48px",
-                    fontWeight: "800",
+                    fontSize: "72px",
+                    fontWeight: "900",
                     color: "#FFFFFF",
                   }}
                 >
@@ -215,10 +196,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ addr
               <div
                 style={{
                   display: "flex",
-                  fontSize: "42px",
-                  fontWeight: "800",
-                  color: "#1F2937",
-                  marginBottom: "10px",
+                  fontSize: "56px",
+                  fontWeight: "900",
+                  color: "#FFFFFF",
+                  marginBottom: "8px",
                   textAlign: "center",
                 }}
               >
@@ -228,9 +209,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ addr
                 <div
                   style={{
                     display: "flex",
-                    fontSize: "28px",
-                    fontWeight: "600",
-                    color: "#10B981",
+                    fontSize: "36px",
+                    fontWeight: "900",
+                    color: "rgba(255, 255, 255, 0.9)",
                   }}
                 >
                   {coinSymbol}
@@ -260,10 +241,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ addr
                 <div
                   style={{
                     display: "flex",
-                    fontSize: "16px",
-                    fontWeight: "600",
-                    color: "#6B7280",
-                    marginBottom: "8px",
+                    fontSize: "24px",
+                    fontWeight: "900",
+                    color: "rgba(255, 255, 255, 0.9)",
+                    marginBottom: "12px",
                   }}
                 >
                   CREATED
@@ -271,9 +252,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ addr
                 <div
                   style={{
                     display: "flex",
-                    fontSize: "20px",
-                    fontWeight: "700",
-                    color: "#1F2937",
+                    fontSize: "28px",
+                    fontWeight: "900",
+                    color: "#FFFFFF",
                     textAlign: "center",
                   }}
                 >
@@ -293,10 +274,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ addr
                 <div
                   style={{
                     display: "flex",
-                    fontSize: "16px",
-                    fontWeight: "600",
-                    color: "#6B7280",
-                    marginBottom: "8px",
+                    fontSize: "24px",
+                    fontWeight: "900",
+                    color: "rgba(255, 255, 255, 0.9)",
+                    marginBottom: "12px",
                   }}
                 >
                   CREATOR
@@ -304,9 +285,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ addr
                 <div
                   style={{
                     display: "flex",
-                    fontSize: "20px",
-                    fontWeight: "700",
-                    color: "#1F2937",
+                    fontSize: "28px",
+                    fontWeight: "900",
+                    color: "#FFFFFF",
                     textAlign: "center",
                     fontFamily: "monospace",
                   }}
@@ -366,7 +347,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ addr
           fontWeight: 700,
         }}
       >
-        ZBase Creator - New Token
+        ZBase Creator - New ZoraCoin
       </div>,
       { width, height },
     )

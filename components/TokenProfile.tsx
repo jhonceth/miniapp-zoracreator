@@ -30,6 +30,9 @@ import {
   Link as LinkIcon,
   User,
   Share2,
+  Network,
+  FileText,
+  Edit,
 } from "lucide-react";
 import { UpdateURIModal } from "@/components/UpdateURIModal";
 import { UpdatePayoutRecipientModal } from "@/components/UpdatePayoutRecipientModal";
@@ -44,7 +47,9 @@ export function TokenProfile({ address }: TokenProfileProps) {
   const [coin, setCoin] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [backUrl, setBackUrl] = useState("/profile"); // Default fallback
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [isUpdateURIModalOpen, setIsUpdateURIModalOpen] = useState(false);
+  const [isUpdatePayoutModalOpen, setIsUpdatePayoutModalOpen] = useState(false);
 
   console.log("🔍 TokenProfile - Address recibida:", address);
 
@@ -81,6 +86,8 @@ export function TokenProfile({ address }: TokenProfileProps) {
   const copyToClipboard = async (text: string, type: string) => {
     try {
       await navigator.clipboard.writeText(text);
+      setCopiedField(type);
+      setTimeout(() => setCopiedField(null), 2000);
       console.log(`✅ ${type} copied to clipboard`);
     } catch (err) {
       console.error(`❌ Failed to copy ${type}:`, err);
@@ -94,7 +101,7 @@ export function TokenProfile({ address }: TokenProfileProps) {
   const shareToken = async () => {
     const base = typeof window !== 'undefined' ? window.location.origin : ''
     const url = `${base}/token/${address}?v=${Date.now()}`
-    const intent = `https://warpcast.com/~/compose?text=${encodeURIComponent(`Zora Creator Coin "${coin?.name || 'Token'}" Check stats here 📊`)}&embeds[]=${encodeURIComponent(url)}`
+    const intent = `https://warpcast.com/~/compose?text=${encodeURIComponent(`Check out the performance of this ZoraCoin "${coin?.name || 'Token'}" Check stats here 📊`)}&embeds[]=${encodeURIComponent(url)}`
     
     // Intento con Mini App composeCast si está disponible
     try {
@@ -102,7 +109,7 @@ export function TokenProfile({ address }: TokenProfileProps) {
       import("@farcaster/miniapp-sdk").then(({ sdk }) => {
         if (sdk?.actions?.composeCast) {
           sdk.actions.composeCast({
-            text: `Zora Creator Coin "${coin?.name || 'Token'}" Check stats here 📊`,
+            text: `Check out the performance of this ZoraCoin "${coin?.name || 'Token'}" Check stats here 📊`,
             embeds: [url],
           })
         } else {
@@ -121,10 +128,10 @@ export function TokenProfile({ address }: TokenProfileProps) {
 
   if (!isConnected) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
+      <div className="min-h-screen bg-white">
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-md mx-auto text-center">
-            <div className="bg-white rounded-2xl shadow-xl p-8">
+            <div className="bg-gray-50 rounded-2xl shadow-xl p-8">
               <Wallet className="w-16 h-16 text-purple-600 mx-auto mb-4" />
               <h2 className="text-2xl font-bold text-gray-900 mb-4">Wallet Not Connected</h2>
               <p className="text-gray-600 mb-6">
@@ -145,10 +152,10 @@ export function TokenProfile({ address }: TokenProfileProps) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
+      <div className="min-h-screen bg-white">
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-4xl mx-auto">
-            <div className="bg-white rounded-2xl shadow-xl p-8">
+            <div className="bg-gray-50 rounded-2xl shadow-xl p-8">
               <div className="flex items-center justify-center">
                 <RefreshCw className="w-8 h-8 text-purple-600 animate-spin" />
                 <span className="ml-2 text-lg font-medium text-gray-700">Loading token data...</span>
@@ -162,10 +169,10 @@ export function TokenProfile({ address }: TokenProfileProps) {
 
   if (error || !coin) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
+      <div className="min-h-screen bg-white">
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-4xl mx-auto">
-            <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
+            <div className="bg-gray-50 rounded-2xl shadow-xl p-8 text-center">
               <div className="text-red-500 mb-4">
                 <Activity className="w-16 h-16 mx-auto mb-4" />
                 <h2 className="text-2xl font-bold mb-2">Error Loading Token</h2>
@@ -195,43 +202,38 @@ export function TokenProfile({ address }: TokenProfileProps) {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-white">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-black border-b border-gray-800">
+      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 shadow-sm">
         <div className="px-4 py-3">
           <div className="flex items-center justify-between">
             <button 
               onClick={() => router.back()}
-              className="p-3 hover:bg-gray-800 rounded-lg bg-gray-900 border border-gray-700 transition-all duration-200 hover:scale-105"
+              className="p-3 hover:bg-gray-100 rounded-lg bg-gray-50 border border-gray-200 transition-all duration-200 hover:scale-105"
               title="Go back"
             >
-              <ArrowLeft className="h-6 w-6" />
+              <ArrowLeft className="h-6 w-6 text-gray-700" />
             </button>
             
             <div className="flex items-center gap-2">
-              <img 
-                src="/icon.png" 
-                alt="ZBase Analytics" 
-                className="w-8 h-8 object-contain"
-              />
-              <h1 className="text-lg font-bold">ZBase Analytics</h1>
             </div>
             
             <div className="flex items-center gap-2">
               <button
                 onClick={shareToken}
-                className="p-2 hover:bg-gray-800 rounded-lg"
+                className="p-2 hover:bg-gray-100 rounded-lg flex items-center gap-2"
                 title="Share on Farcaster"
               >
-                <Share2 className="h-4 w-4" />
+                <img src="/farcaster.png" alt="Farcaster" className="w-4 h-4" />
+                <Share2 className="h-4 w-4 text-gray-700" />
               </button>
               <button
                 onClick={refetch}
                 disabled={isLoading}
-                className="p-2 hover:bg-gray-800 rounded-lg disabled:opacity-50"
+                className="p-2 hover:bg-gray-100 rounded-lg disabled:opacity-50"
                 title="Refresh"
               >
-                <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`h-4 w-4 text-gray-700 ${isLoading ? 'animate-spin' : ''}`} />
               </button>
             </div>
           </div>
@@ -240,45 +242,50 @@ export function TokenProfile({ address }: TokenProfileProps) {
 
       {/* Content */}
       <div className="px-4 py-6 pb-20">
-        {/* Token Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center border-2 border-purple-500">
-              {coin.mediaContent?.previewImage?.medium ? (
-                <img
-                  src={coin.mediaContent.previewImage.medium}
-                  alt={coin.name}
-                  className="w-18 h-18 rounded-full object-cover"
-                />
-              ) : (
-                <span className="text-2xl font-bold text-white">
-                  {coin.symbol?.charAt(0) || coin.name?.charAt(0) || "T"}
-                </span>
-              )}
-            </div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold">{coin.name}</h1>
-              <button
-                onClick={() => copyToClipboard(address, 'contract address')}
-                className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
-                title="Copy contract address"
-              >
-                <Copy className="h-5 w-5 text-gray-400 hover:text-gray-300" />
-              </button>
+        {/* Token Banner */}
+        <Card className="overflow-hidden border-0 shadow-xl relative mb-6">
+          <div className="bg-gradient-to-r from-purple-600 via-pink-600 to-purple-700 p-6 text-white">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="flex-shrink-0">
+                  {coin.mediaContent?.previewImage?.medium ? (
+                    <img 
+                      src={coin.mediaContent.previewImage.medium} 
+                      alt={`${coin.name} logo`}
+                      className="w-20 h-20 rounded-xl object-cover border-4 border-white/20 shadow-lg"
+                    />
+                  ) : (
+                    <div className="w-20 h-20 bg-white/20 rounded-xl flex items-center justify-center border-4 border-white/20 shadow-lg">
+                      <span className="text-white text-2xl font-bold">
+                        {coin.symbol?.charAt(0) || coin.name?.charAt(0) || "T"}
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <h1 className="text-3xl font-bold">{coin.name}</h1>
+                  <p className="text-xl text-white/80 font-medium">{coin.symbol}</p>
+                  <div className="flex items-center gap-2 mt-2">
+                    <div className="flex items-center gap-1 bg-white/20 px-2 py-1 rounded-md border border-white/30">
+                      <img src="/base.png" alt="Base Mainnet" className="w-4 h-4" />
+                      <span className="text-white text-xs font-medium">Mainnet</span>
+                    </div>
+                    <Badge className="bg-green-500/20 text-green-100 border-green-500/30">
+                      LIVE
+                    </Badge>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-          
-          <div className="text-sm text-gray-400 mb-6">
-            Base &gt; Uniswap v4
-          </div>
-        </div>
+        </Card>
 
         {/* Financial Metrics Grid */}
         <div className="grid grid-cols-2 gap-3 mb-6">
-          <div className="bg-gray-900 p-4 rounded-lg flex items-center justify-center">
+          <div className="bg-gray-50 p-4 rounded-lg flex items-center justify-center">
             <div className="text-center">
-              <div className="text-xs text-gray-400 mb-1">PRICE</div>
-              <div className="text-2xl font-semibold">
+              <div className="text-xs text-gray-500 mb-1">PRICE</div>
+              <div className="text-2xl font-semibold text-gray-900">
                 {coin.tokenPrice?.priceInUsdc ? 
                   new Intl.NumberFormat("en-US", {
                     style: "currency",
@@ -290,9 +297,9 @@ export function TokenProfile({ address }: TokenProfileProps) {
             </div>
           </div>
           
-          <div className="bg-gray-900 p-4 rounded-lg">
-            <div className="text-xs text-gray-400 mb-1">MARKET CAP</div>
-            <div className="text-lg font-semibold">
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <div className="text-xs text-gray-500 mb-1">MARKET CAP</div>
+            <div className="text-lg font-semibold text-gray-900">
               {coin.marketCap ? 
                 (() => {
                   const cap = parseFloat(coin.marketCap) || 0
@@ -304,9 +311,9 @@ export function TokenProfile({ address }: TokenProfileProps) {
             </div>
           </div>
           
-          <div className="bg-gray-900 p-4 rounded-lg">
-            <div className="text-xs text-gray-400 mb-1">VOLUME 24H</div>
-            <div className="text-lg font-semibold">
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <div className="text-xs text-gray-500 mb-1">VOLUME 24H</div>
+            <div className="text-lg font-semibold text-gray-900">
               {coin.volume24h ? 
                 (() => {
                   const vol = parseFloat(coin.volume24h) || 0
@@ -318,9 +325,9 @@ export function TokenProfile({ address }: TokenProfileProps) {
             </div>
           </div>
           
-          <div className="bg-gray-900 p-4 rounded-lg">
-            <div className="text-xs text-gray-400 mb-1">TOTAL SUPPLY</div>
-            <div className="text-lg font-semibold">
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <div className="text-xs text-gray-500 mb-1">TOTAL SUPPLY</div>
+            <div className="text-lg font-semibold text-gray-900">
               {coin.totalSupply ? 
                 (() => {
                   const supply = parseFloat(coin.totalSupply) || 0
@@ -335,8 +342,8 @@ export function TokenProfile({ address }: TokenProfileProps) {
 
         {/* Performance Changes */}
         <div className="flex gap-2 mb-6">
-          <div className="flex-1 bg-gray-900 p-3 rounded-lg text-center">
-            <div className="text-sm text-gray-400 mb-1">24H</div>
+          <div className="flex-1 bg-gray-50 p-3 rounded-lg text-center">
+            <div className="text-sm text-gray-500 mb-1">24H</div>
             <div className={`text-base font-semibold ${
               coin.marketCapDelta24h && coin.marketCap ? 
                 (() => {
@@ -347,8 +354,8 @@ export function TokenProfile({ address }: TokenProfileProps) {
                   if (marketCap24hAgo > 0) {
                     percentageChange = (change24h / marketCap24hAgo) * 100
                   }
-                  return percentageChange >= 0 ? "text-green-400" : "text-red-400"
-                })() : "text-gray-400"
+                  return percentageChange >= 0 ? "text-green-600" : "text-red-600"
+                })() : "text-gray-500"
             }`}>
               {coin.marketCapDelta24h && coin.marketCap ? 
                 (() => {
@@ -364,16 +371,16 @@ export function TokenProfile({ address }: TokenProfileProps) {
             </div>
           </div>
           
-          <div className="flex-1 bg-gray-900 p-3 rounded-lg text-center">
-            <div className="text-sm text-gray-400 mb-1">HOLDERS</div>
-            <div className="text-base font-semibold">
+          <div className="flex-1 bg-gray-50 p-3 rounded-lg text-center">
+            <div className="text-sm text-gray-500 mb-1">HOLDERS</div>
+            <div className="text-base font-semibold text-gray-900">
               {coin.uniqueHolders || "N/A"}
             </div>
           </div>
           
-          <div className="flex-1 bg-gray-900 p-3 rounded-lg text-center">
-            <div className="text-sm text-gray-400 mb-1">CREATED</div>
-            <div className="text-base font-semibold">
+          <div className="flex-1 bg-gray-50 p-3 rounded-lg text-center">
+            <div className="text-sm text-gray-500 mb-1">CREATED</div>
+            <div className="text-base font-semibold text-gray-900">
               {coin.createdAt ? 
                 new Date(coin.createdAt).toLocaleDateString("en-US", {
                   year: "numeric",
@@ -386,62 +393,145 @@ export function TokenProfile({ address }: TokenProfileProps) {
           </div>
         </div>
 
+        {/* Token Details - Compact Layout */}
+        <div className="space-y-4 mb-6">
+          {/* Contract Address */}
+          <div className="flex items-center gap-3">
+            <label className="text-sm font-medium text-gray-600 flex items-center gap-2 min-w-fit">
+              <FileText className="w-4 h-4" />
+              Contract
+            </label>
+            <p className="font-mono text-sm bg-gray-50 p-3 rounded-lg flex-1">
+              {address.slice(0, 6)}...{address.slice(-4)}
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              asChild
+              className="w-10 h-10 p-1"
+            >
+              <a
+                href={`https://basescan.org/address/${address}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center"
+              >
+                <img src="/bscan.png" alt="BaseScan" className="w-6 h-6 object-contain" />
+              </a>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => copyToClipboard(address, "address")}
+              className="w-10 h-10 p-1"
+            >
+              {copiedField === "address" ? (
+                <CheckCircle className="h-5 w-5" />
+              ) : (
+                <Copy className="h-5 w-5" />
+              )}
+            </Button>
+          </div>
+
+          {/* Network */}
+          <div className="flex items-center gap-3">
+            <label className="text-sm font-medium text-gray-600 flex items-center gap-2 min-w-fit">
+              <Network className="w-4 h-4" />
+              Network
+            </label>
+            <div className="flex items-center gap-2 bg-gray-50 p-3 rounded-lg flex-1">
+              <img src="/base.png" alt="Base Mainnet" className="w-4 h-4" />
+              <p className="font-mono text-sm text-gray-900">
+                Base Mainnet
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* External Links */}
         <div className="flex gap-2 mb-6">
           <a
             href={`https://dexscreener.com/base/${address}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 px-3 py-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
+            className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+            title="DexScreener"
           >
-            <img src="/dexs.ico" alt="DexScreener" className="w-4 h-4" />
-            <span className="text-sm">DexScreener</span>
+            <img src="/dexs.ico" alt="DexScreener" className="w-6 h-6" />
           </a>
           <a
             href={`https://basescan.org/address/${address}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 px-3 py-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
+            className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+            title="BaseScan"
           >
-            <img src="/bscan.png" alt="BaseScan" className="w-4 h-4" />
-            <span className="text-sm">BaseScan</span>
+            <img src="/bscan.png" alt="BaseScan" className="w-6 h-6" />
           </a>
           <a
             href={`${env.NEXT_PUBLIC_ZBASE_ANALYTICS_URL}/token/${address}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 px-3 py-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
+            className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+            title="ZBase Analytics"
           >
-            <img src="/icom.png" alt="ZBase Analytics" className="w-4 h-4" />
-            <span className="text-sm">ZBase Analytics</span>
+            <img src="/icom.png" alt="ZBase Analytics" className="w-6 h-6" />
           </a>
         </div>
 
         {/* Description */}
         {coin.description && (
-          <div className="bg-gray-900 p-4 rounded-lg mb-6">
-            <h3 className="text-sm font-semibold mb-2">Description</h3>
-            <p className="text-sm text-gray-300">{coin.description}</p>
+          <div className="bg-gray-50 p-4 rounded-lg mb-6">
+            <h3 className="text-sm font-semibold mb-2 text-gray-900">Description</h3>
+            <p className="text-sm text-gray-600">{coin.description}</p>
           </div>
         )}
 
         {/* Admin Section */}
         {isAdmin && (
-          <div className="bg-gray-900 p-4 rounded-lg mb-6">
-            <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
+          <div className="bg-gray-50 p-4 rounded-lg mb-6">
+            <h3 className="text-sm font-semibold mb-2 flex items-center gap-2 text-gray-900">
               <Settings className="w-4 h-4" />
               Admin Only
             </h3>
-            <p className="text-xs text-gray-400 mb-4">
+            <p className="text-xs text-gray-500 mb-4">
               These functions are available only for the token creator
             </p>
             <div className="flex gap-3">
-              <UpdateURIModal tokenAddress={address} />
-              <UpdatePayoutRecipientModal tokenAddress={address} />
+              <Button 
+                onClick={() => setIsUpdateURIModalOpen(true)}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <Edit className="h-4 w-4" />
+                Update URI
+              </Button>
+              <Button 
+                onClick={() => setIsUpdatePayoutModalOpen(true)}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <Edit className="h-4 w-4" />
+                Update Payout
+              </Button>
             </div>
+            
+            <UpdateURIModal 
+              isOpen={isUpdateURIModalOpen}
+              onClose={() => setIsUpdateURIModalOpen(false)}
+              tokenAddress={address} 
+            />
+            <UpdatePayoutRecipientModal 
+              isOpen={isUpdatePayoutModalOpen}
+              onClose={() => setIsUpdatePayoutModalOpen(false)}
+              tokenAddress={address} 
+            />
           </div>
         )}
       </div>
+      
+      {/* Bottom Navigation */}
+      <BottomNavigation />
     </div>
   );
 }

@@ -1,9 +1,6 @@
-import createJiti from "jiti";
-import { fileURLToPath } from "node:url";
-const jiti = createJiti(fileURLToPath(import.meta.url));
-
-// Import env here to validate during build. Using jiti@^1 we can import .ts files :)
-jiti("./lib/env");
+// Import env here to validate during build
+// Note: Removed jiti dependency due to installation issues
+// import "./lib/env"; // Comentado temporalmente para evitar errores de módulo
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -14,6 +11,12 @@ const nextConfig = {
         hostname: "**",
       },
     ],
+  },
+  // Configurar límite de tamaño para Server Actions
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '10mb', // Permitir hasta 10MB para imágenes
+    },
   },
 };
 

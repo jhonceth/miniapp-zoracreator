@@ -17,6 +17,7 @@ import { useAccount, useSwitchChain, useConnect } from "wagmi";
 import { AlertTriangle, Rocket, ExternalLink, CheckCircle, Zap, Network, Shield, DollarSign, Info, ChevronDown, ChevronRight, Monitor, Wallet } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import type { TokenFormData } from "@/types/launch";
+import { validateImageFile, validateWalletAddress, IMAGE_VALIDATION_CONFIG } from "@/lib/image-validation";
 
 export function LaunchForm() {
   const { address, isConnected } = useAccount();
@@ -87,32 +88,34 @@ export function LaunchForm() {
     const errors: Record<string, string> = {}
 
     if (!formData.name || !formData.name.trim()) {
-      errors.name = "El nombre del token es requerido"
+      errors.name = "Token name is required"
     } else if (formData.name.length > 50) {
-      errors.name = "El nombre debe tener máximo 50 caracteres"
+      errors.name = "Name must be maximum 50 characters"
     }
 
     if (!formData.symbol || !formData.symbol.trim()) {
-      errors.symbol = "El símbolo del token es requerido"
+      errors.symbol = "Token symbol is required"
     } else if (formData.symbol.length > 10) {
-      errors.symbol = "El símbolo debe tener máximo 10 caracteres"
+      errors.symbol = "Symbol must be maximum 10 characters"
     }
 
     if (!formData.description || !formData.description.trim()) {
-      errors.description = "La descripción es requerida"
+      errors.description = "Description is required"
     } else if (formData.description.length > 500) {
-      errors.description = "La descripción debe tener máximo 500 caracteres"
+      errors.description = "Description must be maximum 500 characters"
     }
 
-    if (!formData.image) {
-      errors.image = "La imagen del token es requerida"
+    // Usar validación centralizada para imagen
+    const imageValidation = validateImageFile(formData.image)
+    if (!imageValidation.isValid) {
+      errors.image = imageValidation.error || "Invalid image"
     }
 
-    if (formData.payoutRecipient && formData.payoutRecipient.trim() && !/^0x[a-fA-F0-9]{40}$/.test(formData.payoutRecipient)) {
-      errors.payoutRecipient = "Dirección de pago inválida"
+    // Usar validación centralizada para dirección de wallet
+    const addressValidation = validateWalletAddress(formData.payoutRecipient)
+    if (!addressValidation.isValid) {
+      errors.payoutRecipient = addressValidation.error || "Invalid address"
     }
-
-    // platformReferrer eliminado: ahora se obtiene automáticamente por backend
 
     setValidationErrors(errors)
     return Object.keys(errors).length === 0
@@ -161,6 +164,8 @@ export function LaunchForm() {
       await deployToken(finalFormData)
     } catch (err) {
       console.error("Error en envío del formulario:", err)
+      // No establecer errores aquí para evitar loops infinitos
+      // El hook useDeployment ya maneja los errores
     }
   }
 
@@ -169,6 +174,9 @@ export function LaunchForm() {
     
     // Limpiar errores antes de reintentar
     setValidationErrors({})
+    
+    // Resetear el estado de deployment para permitir reintentar
+    resetDeployment()
     
     // Llamar al mismo handleSubmit pero sin el preventDefault
     if (!validateForm()) {
@@ -195,6 +203,8 @@ export function LaunchForm() {
       await deployToken(finalFormData)
     } catch (err) {
       console.error("Error en reintento del formulario:", err)
+      // No establecer errores aquí para evitar loops infinitos
+      // El hook useDeployment ya maneja los errores
     }
   }
 
@@ -262,10 +272,10 @@ export function LaunchForm() {
 
       {/* Error Display */}
       {(error || validationErrors.general) && (
-        <Alert variant={error?.includes("cancelada") ? "default" : "destructive"}>
+        <Alert variant={error?.includes("cancelled") ? "default" : "destructive"}>
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            {error?.includes("cancelada") ? (
+            {error?.includes("cancelled") ? (
               <>
                 <strong>🚫 Transaction Cancelled</strong>
                 <br />
@@ -288,13 +298,13 @@ export function LaunchForm() {
                 <strong>Error:</strong> {error || validationErrors.general}
                 <br />
                 <br />
-                <strong>Posibles soluciones:</strong>
+                <strong>Possible solutions:</strong>
                 <ul className="list-disc list-inside mt-2 space-y-1">
-                  <li>Verifica que estés en Base Mainnet (8453) o Base Sepolia (84532)</li>
-                  <li>Asegúrate de tener suficiente ETH para gas fees</li>
-                  <li>Intenta con un símbolo de token diferente</li>
-                  <li>Verifica que la imagen sea válida (PNG, JPG, GIF, WebP)</li>
-                  <li>Confirma que el Factory de Zora esté disponible</li>
+                  <li>Make sure you&apos;re on Base Mainnet (8453) or Base Sepolia (84532)</li>
+                  <li>Ensure you have enough ETH for gas fees</li>
+                  <li>Try with a different token symbol</li>
+                  <li>Verify that the image is valid ({IMAGE_VALIDATION_CONFIG.ALLOWED_TYPES.map(type => type.split('/')[1].toUpperCase()).join(', ')})</li>
+                  <li>Make sure the file is {IMAGE_VALIDATION_CONFIG.UI_INFO.MAX_SIZE_MB}MB or less</li>
                 </ul>
               </>
             )}
@@ -390,9 +400,6 @@ export function LaunchForm() {
                   onImageSelect={(file) => handleInputChange("image", file)}
                   error={validationErrors.image}
                 />
-                {validationErrors.image && (
-                  <p className="text-sm text-red-600 mt-1">{validationErrors.image}</p>
-                )}
               </div>
             </div>
 

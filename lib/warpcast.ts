@@ -30,6 +30,9 @@ export async function getFarcasterManifest() {
       payload: env.NEXT_PUBLIC_FARCASTER_PAYLOAD,
       signature: env.NEXT_PUBLIC_FARCASTER_SIGNATURE,
     },
+    baseBuilder: {
+      allowedAddresses: ["0x5B436476E8D54575306eB34bC969D5e5A137B16b"]
+    },
     frame: {
       version: "1",
       name: frameName,
@@ -52,8 +55,8 @@ export async function getFarcasterManifest() {
         // 1284 x 2778, visual previews of the app, max 3 screenshots
         `${appUrl}/images/feed.png`,
       ],
-      heroImageUrl: `${appUrl}/images/feed.png`, // 1200 x 630px (1.91:1), promotional display image on top of the mini app store
-      ogImageUrl: `${appUrl}/images/feed.png`, // 1200 x 630px (1.91:1), promotional image, same as app hero image
+      heroImageUrl: `${appUrl}/images/builders.png`, // 1200 x 630px (1.91:1), promotional display image on top of the mini app store
+      ogImageUrl: `${appUrl}/images/builders.png`, // 1200 x 630px (1.91:1), promotional image, same as app hero image
       noindex: noindex,
     },
   };

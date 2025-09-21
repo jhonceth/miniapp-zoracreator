@@ -19,7 +19,7 @@ export default function LaunchPage() {
             </Button>
           </Link>
           <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-            Create Token
+            Launch Coin
           </h1>
         </div>
 

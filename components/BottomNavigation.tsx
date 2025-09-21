@@ -46,7 +46,7 @@ export function BottomNavigation() {
             );
           })}
           
-          {/* Create Button */}
+          {/* Launch Button */}
           <Link
             href="/launch"
             className={`flex flex-col items-center gap-1 py-2 px-4 rounded-lg transition-colors duration-200 ${
@@ -58,7 +58,7 @@ export function BottomNavigation() {
             <div className="w-5 h-5 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
               <Rocket className="w-3 h-3 text-white" />
             </div>
-            <span className="text-xs font-medium">Create</span>
+            <span className="text-xs font-medium">Launch</span>
           </Link>
         </div>
       </div>

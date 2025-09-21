@@ -11,6 +11,7 @@ import {
 } from "@zoralabs/coins-sdk"
 import { Address, parseEther } from "viem"
 import { base, baseSepolia } from "viem/chains"
+import { validateImageFile, recreateImageFile, getSpecificErrorMessage, IMAGE_VALIDATION_CONFIG } from "./image-validation"
 
 interface ZoraDeploymentParams {
   name: string
@@ -60,30 +61,22 @@ export async function prepareZoraDeploymentAction(params: ZoraDeploymentParams) 
       throw new Error(`Chain ID ${params.chainId} no soportado. Usa Base Mainnet (8453) o Base Sepolia (84532)`)
     }
 
-    // Convertir datos serializados de vuelta a File
-    console.log("🔄 Convirtiendo datos de imagen...")
-    const imageBlob = new Blob([new Uint8Array(params.imageData.data)], { type: params.imageData.type })
-    const imageFile = new File([imageBlob], params.imageData.name, { type: params.imageData.type })
+    console.log("🌐 Configuración de red:", {
+      chainId: params.chainId,
+      networkName: params.chainId === base.id ? "Base Mainnet" : "Base Sepolia",
+      currency: params.currency,
+      isTestnet: params.chainId === baseSepolia.id
+    })
 
-    // Validar archivo de imagen antes de subir
+    // Convertir datos serializados de vuelta a File usando función centralizada
+    console.log("🔄 Convirtiendo datos de imagen...")
+    const imageFile = recreateImageFile(params.imageData)
+
+    // Validar archivo usando validación centralizada
     console.log("🔍 Validando archivo de imagen...")
-    const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/svg+xml']
-    const maxSize = 5 * 1024 * 1024 // 5MB
-    
-    if (!allowedTypes.includes(imageFile.type)) {
-      if (imageFile.type === 'image/webp') {
-        throw new Error("WebP format is not supported. Please use PNG, JPEG, JPG, GIF or SVG format.")
-      } else {
-        throw new Error("Image must be a PNG, JPEG, JPG, GIF or SVG. Please try again with a valid image format.")
-      }
-    }
-    
-    if (imageFile.size > maxSize) {
-      throw new Error("Image file is too large. Please use an image smaller than 5MB.")
-    }
-    
-    if (imageFile.size === 0) {
-      throw new Error("Image file is empty. Please select a valid image.")
+    const validation = validateImageFile(imageFile)
+    if (!validation.isValid) {
+      throw new Error(validation.error || "Invalid image file")
     }
     
     console.log(`✅ Imagen validada: ${imageFile.name} (${imageFile.type}, ${(imageFile.size / 1024 / 1024).toFixed(2)}MB)`)
@@ -153,6 +146,8 @@ export async function prepareZoraDeploymentAction(params: ZoraDeploymentParams) 
         platformReferrer: platformReferrer,
         metadataType: "RAW_URI",
         metadataUri: createMetadataParameters.metadata?.uri,
+        isBaseSepolia: params.chainId === baseSepolia.id,
+        isBaseMainnet: params.chainId === base.id
       })
 
       // initialPurchase removido: no soportado por CreateCoinArgs en esta versión
@@ -227,9 +222,9 @@ export async function prepareZoraDeploymentAction(params: ZoraDeploymentParams) 
         const errorText = uploadError.message.toLowerCase()
         
         if (errorText.includes("image must be") || errorText.includes("format")) {
-          errorMessage = "Image must be a PNG, JPEG, JPG, GIF or SVG. Please try again with a valid image format."
+          errorMessage = "Image must be a PNG, JPEG, JPG, GIF, SVG, WebP, BMP, TIFF, AVIF, HEIC, or HEIF. Please try again with a valid image format."
         } else if (errorText.includes("size") || errorText.includes("too large")) {
-          errorMessage = "Image file is too large. Please use an image smaller than 5MB."
+          errorMessage = "Image file is too large. Please use an image smaller than 10MB."
         } else if (errorText.includes("network") || errorText.includes("connection")) {
           errorMessage = "Network error uploading image. Please check your connection and try again."
         } else if (errorText.includes("service unavailable") || errorText.includes("timeout")) {
@@ -306,13 +301,24 @@ export async function prepareZoraDeploymentAction(params: ZoraDeploymentParams) 
         throw new Error(errorMessage)
       }
     }
-  } catch (error) {
-    console.error("❌ Error preparando deployment:", error)
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Error desconocido al preparar deployment",
+    } catch (error) {
+      console.error("❌ Error preparando deployment:", error)
+      
+      // Manejo específico de errores para Base Sepolia
+      if (params.chainId === baseSepolia.id) {
+        console.error("🔍 Error específico de Base Sepolia:", {
+          chainId: params.chainId,
+          currency: params.currency,
+          errorMessage: error instanceof Error ? error.message : "Unknown error",
+          errorStack: error instanceof Error ? error.stack : undefined
+        })
+      }
+      
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Error desconocido al preparar deployment",
+      }
     }
-  }
 }
 
 export async function validateZoraEnvironmentAction() {
