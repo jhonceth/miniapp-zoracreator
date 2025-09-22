@@ -65,8 +65,16 @@ export function MiniAppProvider({
         return result;
       }
       return null;
-    } catch (error) {
+    } catch (error: any) {
       console.error("[error] adding frame", error);
+      
+      // Handle specific MiniApp errors
+      if (error.message?.includes('InvalidDomainManifest')) {
+        console.warn('MiniApp domain manifest error - continuing without MiniApp features');
+      } else if (error.message?.includes('AddMiniApp.InvalidDomainManifest')) {
+        console.warn('MiniApp domain manifest validation failed - continuing without MiniApp features');
+      }
+      
       return null;
     }
   }, []);

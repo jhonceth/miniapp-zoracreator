@@ -36,6 +36,7 @@ import {
 } from "lucide-react";
 import { UpdateURIModal } from "@/components/UpdateURIModal";
 import { UpdatePayoutRecipientModal } from "@/components/UpdatePayoutRecipientModal";
+import TradingCoins from "@/components/TradingCoins";
 
 interface TokenProfileProps {
   address: string;
@@ -486,6 +487,16 @@ export function TokenProfile({ address }: TokenProfileProps) {
             <p className="text-sm text-gray-600">{coin.description}</p>
           </div>
         )}
+
+            {/* Trading Section */}
+            <TradingCoins 
+              tokenAddress={address}
+              tokenSymbol={coin.symbol}
+              tokenName={coin.name}
+              tokenDecimals={coin.decimals}
+              tokenPrice={coin.tokenPrice?.priceInUsdc ? parseFloat(coin.tokenPrice.priceInUsdc) : 0.01}
+              className="mb-6"
+            />
 
         {/* Admin Section */}
         {isAdmin && (

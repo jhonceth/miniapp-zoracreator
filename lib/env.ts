@@ -8,6 +8,7 @@ export const env = createEnv({
     JWT_SECRET: z.string().min(1).optional().default("dev_jwt_secret"),
     REDIS_URL: z.string().min(1).optional().default("redis://localhost:6379"),
     REDIS_TOKEN: z.string().min(1).optional().default("dev_token"),
+    ETHERSCAN_API_KEY: z.string().min(1),
   },
   client: {
     NEXT_PUBLIC_URL: z.string().min(1).optional().default("http://localhost:3000"),

@@ -305,8 +305,11 @@ export default function MyCoinsPage() {
             {viewMode === 'grid' ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {paginatedCoins.map((coin) => (
-                  <Link key={coin.address} href={`/token/${coin.address}?from=/my-coins`}>
-                    <Card className="hover:shadow-lg transition-shadow duration-200 cursor-pointer">
+                  <Card 
+                    key={coin.address} 
+                    className="hover:shadow-lg transition-shadow duration-200 cursor-pointer"
+                    onClick={() => window.location.href = `/token/${coin.address}?from=/my-coins`}
+                  >
                       <CardHeader className="p-4">
                         <div className="flex items-start gap-3">
                           {/* Token Avatar */}
@@ -470,14 +473,16 @@ export default function MyCoinsPage() {
                         </div>
                       </CardContent>
                     </Card>
-                  </Link>
                 ))}
               </div>
             ) : (
               <div className="space-y-2">
                 {paginatedCoins.map((coin) => (
-                  <Link key={coin.address} href={`/token/${coin.address}?from=/my-coins`}>
-                    <Card className="hover:shadow-md transition-shadow duration-200 cursor-pointer">
+                  <Card 
+                    key={coin.address} 
+                    className="hover:shadow-md transition-shadow duration-200 cursor-pointer"
+                    onClick={() => window.location.href = `/token/${coin.address}?from=/my-coins`}
+                  >
                       <CardContent className="p-4">
                         <div className="flex items-center gap-3">
                           {/* Token Avatar */}
@@ -587,7 +592,6 @@ export default function MyCoinsPage() {
                         </div>
                       </CardContent>
                     </Card>
-                  </Link>
                 ))}
               </div>
             )}
