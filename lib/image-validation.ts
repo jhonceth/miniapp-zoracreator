@@ -62,7 +62,7 @@ export function validateImageType(file: File): { isValid: boolean; error?: strin
     return { isValid: false, error: IMAGE_VALIDATION_CONFIG.ERROR_MESSAGES.INVALID_TYPE };
   }
   
-  if (!IMAGE_VALIDATION_CONFIG.ALLOWED_TYPES.includes(file.type)) {
+  if (!IMAGE_VALIDATION_CONFIG.ALLOWED_TYPES.includes(file.type as any)) {
     return { isValid: false, error: IMAGE_VALIDATION_CONFIG.ERROR_MESSAGES.INVALID_TYPE };
   }
   

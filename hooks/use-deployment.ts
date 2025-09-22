@@ -95,6 +95,9 @@ export function useDeployment() {
   } = useWaitForTransactionReceipt({ hash: sendHash || hash })
 
   const [isPreparingDeployment, setIsPreparingDeployment] = useState(false)
+  const [isUploadingImage, setIsUploadingImage] = useState(false)
+  const [isCreatingMetadata, setIsCreatingMetadata] = useState(false)
+  const [isDeployingContract, setIsDeployingContract] = useState(false)
   const [createdToken, setCreatedToken] = useState<CreatedToken | null>(null)
   const [progress, setProgress] = useState(0)
   const [deploymentError, setDeploymentError] = useState<string | null>(null)
@@ -134,14 +137,17 @@ export function useDeployment() {
       setHasProcessedError(false)
       setProgress(10)
 
-      console.log("🚀 Iniciando deployment con Zora SDK...")
+      console.log("🚀 Starting deployment with Zora SDK...")
 
-      // Usar función centralizada para crear datos serializables
+      // Step 1: Prepare image data
+      setIsUploadingImage(true)
       setProgress(20)
       const serializableImageData = await createSerializableImageData(formData.image)
 
-      // Preparar deployment usando Zora SDK
-      setProgress(30)
+      // Step 2: Create metadata and upload to IPFS
+      setIsUploadingImage(false)
+      setIsCreatingMetadata(true)
+      setProgress(40)
       const deploymentResult = await prepareZoraDeploymentAction({
         name: formData.name,
         symbol: formData.symbol,
@@ -157,13 +163,15 @@ export function useDeployment() {
         throw new Error(deploymentResult.error)
       }
 
+      setIsCreatingMetadata(false)
+      setIsDeployingContract(true)
       setProgress(70)
-      console.log("✅ Deployment preparado, enviando transacción...")
+      console.log("✅ Deployment prepared, sending transaction...")
 
-      // Ejecutar transacción usando los parámetros del SDK
+      // Execute transaction using SDK parameters
       const contractCallParams = deploymentResult.data!.contractCallParams
       
-      console.log("🔍 ContractCallParams recibido en hook:", {
+      console.log("🔍 ContractCallParams received in hook:", {
         isArray: Array.isArray(contractCallParams),
         length: Array.isArray(contractCallParams) ? contractCallParams.length : 0,
         firstTransaction: Array.isArray(contractCallParams) && contractCallParams.length > 0 ? {
@@ -173,26 +181,26 @@ export function useDeployment() {
         } : null
       })
       
-      // Validar que es un array de transacciones
+      // Validate that it's an array of transactions
       if (!Array.isArray(contractCallParams)) {
-        throw new Error("ContractCallParams debe ser un array de transacciones")
+        throw new Error("ContractCallParams must be an array of transactions")
       }
       
       if (contractCallParams.length === 0) {
-        throw new Error("ContractCallParams está vacío - no se generaron transacciones")
+        throw new Error("ContractCallParams is empty - no transactions generated")
       }
       
-      // Usar la primera transacción (según documentación de Zora SDK)
+      // Use the first transaction (according to Zora SDK documentation)
       const firstTx = contractCallParams[0]
       
-      // Validar la primera transacción
+      // Validate the first transaction
       if (!firstTx.to || !firstTx.data) {
-        throw new Error("Primera transacción inválida - faltan to o data")
+        throw new Error("Invalid first transaction - missing to or data")
       }
       
-      console.log("✅ Parámetros de transacción validados correctamente")
+      console.log("✅ Transaction parameters validated correctly")
       
-      // Usar sendTransaction en lugar de writeContract según documentación de Zora SDK
+      // Use sendTransaction instead of writeContract according to Zora SDK documentation
       const txValue = firstTx.value
       await sendTransaction({
         to: firstTx.to,
@@ -209,23 +217,29 @@ export function useDeployment() {
     } catch (error) {
       console.error("❌ Error en deployment:", error)
       
-      // Verificar si es un error de cancelación del usuario
+      // Check if it's a user cancellation error
       if (isUserRejectedError(error)) {
-        setDeploymentError("❌ Transacción cancelada por el usuario")
+        setDeploymentError("❌ Transaction cancelled by user")
         setIsUserCancelled(true)
         setIsPreparingDeployment(false)
+        setIsUploadingImage(false)
+        setIsCreatingMetadata(false)
+        setIsDeployingContract(false)
         setProgress(0)
-        // Resetear el estado de wagmi para permitir reintentar
+        // Reset wagmi state to allow retry
         resetWriteContract()
         resetSendTransaction()
       } else {
-        // Usar función centralizada para obtener mensaje de error específico
-        const errorMessage = getSpecificErrorMessage(error)
+        // Use centralized function to get specific error message
+        const errorMessage = getSpecificErrorMessage(error as Error)
         
         setDeploymentError(errorMessage)
       }
       
       setIsPreparingDeployment(false)
+      setIsUploadingImage(false)
+      setIsCreatingMetadata(false)
+      setIsDeployingContract(false)
       setProgress(0)
     }
   }, [isConnected, address, isSupportedChain, chainId, writeContract, resetWriteContract])
@@ -311,6 +325,9 @@ export function useDeployment() {
     setProgress(0)
     setDeploymentError(null)
     setIsPreparingDeployment(false)
+    setIsUploadingImage(false)
+    setIsCreatingMetadata(false)
+    setIsDeployingContract(false)
     setIsUserCancelled(false)
     setHasProcessedError(false)
     resetWriteContract()
@@ -359,6 +376,9 @@ export function useDeployment() {
     deployToken,
     resetDeployment,
     isPreparingDeployment,
+    isUploadingImage,
+    isCreatingMetadata,
+    isDeployingContract,
     isPending,
     isConfirming,
     isConfirmed,

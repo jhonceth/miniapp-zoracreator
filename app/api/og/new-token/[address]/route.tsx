@@ -25,6 +25,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ addr
     let creatorAddress = "Unknown"
     let createdAt = new Date().toISOString()
     let logoSrc: string | undefined
+    let creatorAvatar: string | undefined
+    let creatorIdentity: string | undefined
+    let creatorFid: string | undefined
 
     try {
       const response = await getCoin({ address, chain: 8453 })
@@ -35,6 +38,39 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ addr
         creatorAddress = token.creatorAddress || creatorAddress
         createdAt = token.createdAt || createdAt
         logoSrc = token.mediaContent?.previewImage?.medium || token.mediaContent?.previewImage?.small
+        
+        // Try to get creator avatar from web3.bio
+        try {
+          const controller = new AbortController()
+          const timeoutId = setTimeout(() => controller.abort(), 2000) // 2 second timeout
+          
+          const creatorResponse = await fetch(`https://api.web3.bio/profile/${creatorAddress}`, {
+            signal: controller.signal
+          })
+          
+          clearTimeout(timeoutId)
+          
+          if (creatorResponse.ok) {
+            const creatorData = await creatorResponse.json()
+            if (creatorData && creatorData.length > 0) {
+              const farcasterProfile = creatorData.find((profile: any) => profile.platform === 'farcaster')
+              if (farcasterProfile) {
+                if (farcasterProfile.avatar) {
+                  creatorAvatar = farcasterProfile.avatar
+                }
+                if (farcasterProfile.identity) {
+                  creatorIdentity = farcasterProfile.identity
+                }
+                if (farcasterProfile.social?.uid) {
+                  creatorFid = farcasterProfile.social.uid.toString()
+                }
+              }
+            }
+          }
+        } catch (error) {
+          // Ignore web3.bio API errors/timeouts
+          console.log('web3.bio API skipped:', (error as Error).message)
+        }
       }
     } catch {}
 
@@ -58,7 +94,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ addr
           flexDirection: "column",
           fontFamily: "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica Neue, Arial",
           position: "relative",
-          background: "linear-gradient(135deg, #10B981 0%, #059669 25%, #047857 50%, #065F46 75%, #064E3B 100%)",
+          background: "#9333EA",
           justifyContent: "center",
           alignItems: "center",
         }}
@@ -127,35 +163,29 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ addr
             </div>
           </div>
 
-          {/* Token Info Card */}
+          {/* Token Logo and Info - Side by side */}
           <div
             style={{
               display: "flex",
-              flexDirection: "column",
+              flexDirection: "row",
               alignItems: "center",
               justifyContent: "center",
-              background: "linear-gradient(135deg, #9333EA 0%, #EC4899 50%, #9333EA 100%)",
-              borderRadius: "25px",
-              padding: "60px",
-              boxShadow: "0 20px 40px rgba(0, 0, 0, 0.3)",
-              maxWidth: "900px",
-              width: "100%",
-              position: "relative",
+              gap: "60px",
+              marginBottom: "40px",
             }}
           >
-            {/* Token Logo */}
+            {/* LEFT SIDE - Logo */}
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                width: "180px",
-                height: "180px",
-                borderRadius: "20px",
+                width: "250px",
+                height: "250px",
+                borderRadius: "25px",
                 background: "linear-gradient(135deg, #10B981, #059669)",
-                marginBottom: "40px",
-                border: "6px solid #FFFFFF",
-                boxShadow: "0 10px 20px rgba(0, 0, 0, 0.2)",
+                border: "8px solid #FFFFFF",
+                boxShadow: "0 15px 30px rgba(0, 0, 0, 0.2)",
               }}
             >
               {logoSrc ? (
@@ -174,7 +204,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ addr
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    fontSize: "72px",
+                    fontSize: "100px",
                     fontWeight: "900",
                     color: "#FFFFFF",
                   }}
@@ -184,23 +214,23 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ addr
               )}
             </div>
 
-            {/* Token Name and Symbol */}
+            {/* RIGHT SIDE - Name and Symbol */}
             <div
               style={{
                 display: "flex",
                 flexDirection: "column",
-                alignItems: "center",
-                marginBottom: "30px",
+                alignItems: "flex-start",
+                justifyContent: "center",
               }}
             >
               <div
                 style={{
                   display: "flex",
-                  fontSize: "56px",
+                  fontSize: "72px",
                   fontWeight: "900",
                   color: "#FFFFFF",
-                  marginBottom: "8px",
-                  textAlign: "center",
+                  marginBottom: "20px",
+                  textAlign: "left",
                 }}
               >
                 {coinName}
@@ -209,7 +239,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ addr
                 <div
                   style={{
                     display: "flex",
-                    fontSize: "36px",
+                    fontSize: "48px",
                     fontWeight: "900",
                     color: "rgba(255, 255, 255, 0.9)",
                   }}
@@ -218,81 +248,132 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ addr
                 </div>
               )}
             </div>
+          </div>
 
-            {/* Token Details Grid */}
+          {/* Created and Creator Info */}
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              marginTop: "30px",
+              gap: "15px",
+            }}
+          >
             <div
               style={{
                 display: "flex",
-                flexDirection: "row",
-                justifyContent: "space-around",
-                width: "100%",
-                gap: "20px",
+                fontSize: "32px",
+                fontWeight: "600",
+                color: "#FFFFFF",
+                textAlign: "center",
               }}
             >
-              {/* Created Date */}
+              ⏰ Created: {formatDate(createdAt)}
+            </div>
+            {/* Creator Section */}
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "10px",
+              }}
+            >
+              {/* Creator Label */}
               <div
                 style={{
                   display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  flex: 1,
+                  fontSize: "28px",
+                  fontWeight: "700",
+                  color: "#FFFFFF",
+                  textAlign: "center",
                 }}
               >
-                <div
-                  style={{
-                    display: "flex",
-                    fontSize: "24px",
-                    fontWeight: "900",
-                    color: "rgba(255, 255, 255, 0.9)",
-                    marginBottom: "12px",
-                  }}
-                >
-                  CREATED
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    fontSize: "28px",
-                    fontWeight: "900",
-                    color: "#FFFFFF",
-                    textAlign: "center",
-                  }}
-                >
-                  {formatDate(createdAt)}
-                </div>
+                Creator
               </div>
-
-              {/* Creator */}
+              
+              {/* Avatar and Info Side by Side */}
               <div
                 style={{
                   display: "flex",
-                  flexDirection: "column",
                   alignItems: "center",
-                  flex: 1,
+                  justifyContent: "center",
+                  gap: "20px",
                 }}
               >
+                {/* Creator Avatar */}
                 <div
                   style={{
+                    width: "80px",
+                    height: "80px",
+                    borderRadius: "50%",
                     display: "flex",
-                    fontSize: "24px",
-                    fontWeight: "900",
-                    color: "rgba(255, 255, 255, 0.9)",
-                    marginBottom: "12px",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    overflow: "hidden",
+                    border: "3px solid #FFFFFF",
+                    backgroundColor: creatorAvatar ? "transparent" : "#E5E7EB",
                   }}
                 >
-                  CREATOR
+                  {creatorAvatar ? (
+                    <img
+                      src={creatorAvatar}
+                      alt="creator avatar"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        fontSize: "40px",
+                        fontWeight: "600",
+                        color: "#6B21A8",
+                      }}
+                    >
+                      👤
+                    </div>
+                  )}
                 </div>
+                
+                {/* Creator Info */}
                 <div
                   style={{
                     display: "flex",
-                    fontSize: "28px",
-                    fontWeight: "900",
-                    color: "#FFFFFF",
-                    textAlign: "center",
-                    fontFamily: "monospace",
+                    flexDirection: "column",
+                    alignItems: "flex-start",
+                    justifyContent: "center",
+                    gap: "5px",
                   }}
                 >
-                  {creatorAddress.slice(0, 6)}...{creatorAddress.slice(-4)}
+                  <div
+                    style={{
+                      display: "flex",
+                      fontSize: "32px",
+                      fontWeight: "600",
+                      color: "#FFFFFF",
+                      textAlign: "left",
+                    }}
+                  >
+                    {creatorIdentity || creatorAddress.slice(0, 6) + "..." + creatorAddress.slice(-4)}
+                  </div>
+                  {creatorFid && (
+                    <div
+                      style={{
+                        display: "flex",
+                        fontSize: "24px",
+                        fontWeight: "500",
+                        color: "rgba(255, 255, 255, 0.8)",
+                        textAlign: "left",
+                      }}
+                    >
+                      FID: {creatorFid}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -317,7 +398,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ addr
                 textShadow: "1px 1px 2px rgba(0, 0, 0, 0.3)",
               }}
             >
-              Created on Zbase Creator
+              Launch in ZBase Creator
             </div>
           </div>
         </div>

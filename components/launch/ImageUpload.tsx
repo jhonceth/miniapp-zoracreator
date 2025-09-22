@@ -9,6 +9,11 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Upload, X, AlertTriangle } from "lucide-react"
 import { validateImageFile, IMAGE_VALIDATION_CONFIG } from "@/lib/image-validation";
 
+interface ImageUploadProps {
+  onImageSelect: (file: File | null) => void;
+  error?: string;
+}
+
 export function ImageUpload({ onImageSelect, error }: ImageUploadProps) {
   const [preview, setPreview] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)

@@ -11,13 +11,25 @@ const ErudaProvider = dynamic(
 );
 
 export default function Providers({ children }: { children: React.ReactNode }) {
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  
+  if (isDevelopment) {
+    return (
+      <ErudaProvider>
+        <MiniAppWalletProvider>
+          <MiniAppProvider addMiniAppOnLoad={true}>
+            <UserProvider autoSignIn={true}>{children}</UserProvider>
+          </MiniAppProvider>
+        </MiniAppWalletProvider>
+      </ErudaProvider>
+    );
+  }
+  
   return (
-    <ErudaProvider>
-      <MiniAppWalletProvider>
-        <MiniAppProvider addMiniAppOnLoad={true}>
-          <UserProvider autoSignIn={true}>{children}</UserProvider>
-        </MiniAppProvider>
-      </MiniAppWalletProvider>
-    </ErudaProvider>
+    <MiniAppWalletProvider>
+      <MiniAppProvider addMiniAppOnLoad={true}>
+        <UserProvider autoSignIn={true}>{children}</UserProvider>
+      </MiniAppProvider>
+    </MiniAppWalletProvider>
   );
 }

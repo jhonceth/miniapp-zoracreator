@@ -28,6 +28,9 @@ export function LaunchForm() {
     deployToken,
     resetDeployment,
     isPreparingDeployment,
+    isUploadingImage,
+    isCreatingMetadata,
+    isDeployingContract,
     isPending,
     isConfirming,
     isConfirmed,
@@ -488,15 +491,45 @@ export function LaunchForm() {
             >
               {isDeploying ? (
                 isPreparingDeployment ? (
-                  "Preparing..."
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Initializing deployment...
+                  </>
+                ) : isUploadingImage ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Preparing image data...
+                  </>
+                ) : isCreatingMetadata ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Creating metadata & uploading to IPFS...
+                  </>
+                ) : isDeployingContract ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Deploying smart contract...
+                  </>
                 ) : isPending ? (
-                  "Sending transaction..."
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Waiting for wallet signature...
+                  </>
                 ) : isConfirming ? (
-                  "Confirming..."
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Confirming transaction...
+                  </>
                 ) : isConfirmed ? (
-                  "Completed"
+                  <>
+                    <CheckCircle className="mr-2 h-4 w-4" />
+                    Token created successfully!
+                  </>
                 ) : (
-                  "Processing..."
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Processing transaction...
+                  </>
                 )
               ) : !isConnected ? (
                 <>
@@ -515,6 +548,22 @@ export function LaunchForm() {
                 </>
               )}
             </Button>
+
+            {/* Progress Bar */}
+            {isDeploying && progress > 0 && (
+              <div className="mt-4 space-y-2">
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>Progress</span>
+                  <span>{progress}%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-gradient-to-r from-red-500 to-orange-500 h-2 rounded-full transition-all duration-300 ease-out"
+                    style={{ width: `${progress}%` }}
+                  ></div>
+                </div>
+              </div>
+            )}
 
             {!isConnected && (
               <p className="text-center text-sm text-orange-600">
