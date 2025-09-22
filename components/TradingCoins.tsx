@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, ArrowUpDown, AlertCircle, CheckCircle, Wallet, Settings, RefreshCw, ExternalLink } from 'lucide-react';
+import { env } from '@/lib/env';
 
 interface TradingCoinsProps {
   tokenAddress: string;
@@ -468,6 +469,10 @@ export default function TradingCoins({
         tokenPrice: tokenPrice
       });
 
+      // Prepare trade parameters with referrer hookData
+      const referrerAddress = env.NEXT_PUBLIC_PLATFORM_REFERRER_ADDRESS;
+      const hookData = encodeReferrerHookData(referrerAddress);
+      
       const tradeParameters: TradeParameters = {
         sell: tradeState.sellType === 'eth' 
           ? { type: 'eth' }
@@ -477,13 +482,16 @@ export default function TradingCoins({
           : { type: 'eth' },
         amountIn: sellAmount,
         slippage: tradeState.slippage,
-        sender: address
+        sender: address,
+        hookData: hookData // Include referrer hookData
       };
 
       console.log('🔍 Final Trade Parameters:', tradeParameters);
       console.log('🔍 Wallet Client Account:', walletClient.account);
       console.log('🔍 Address:', address);
       console.log('🔍 Using Account:', walletClient.account || address);
+      console.log('🔗 Referrer Address:', referrerAddress);
+      console.log('🔗 HookData:', hookData);
 
       console.log('🚀 Calling tradeCoin...');
       let receipt;
@@ -674,6 +682,27 @@ export default function TradingCoins({
   const truncateTokenSymbol = (symbol: string, maxLength: number = 8) => {
     if (symbol.length <= maxLength) return symbol;
     return symbol.substring(0, maxLength) + '...';
+  };
+
+  // Function to encode referrer address as hookData
+  const encodeReferrerHookData = (referrerAddress: string): `0x${string}` => {
+    try {
+      // Import abi from viem for encoding
+      const { encodeAbiParameters } = require('viem');
+      
+      // Encode the referrer address as hookData
+      const hookData = encodeAbiParameters(
+        [{ name: 'referrer', type: 'address' }],
+        [referrerAddress as `0x${string}`]
+      );
+      
+      console.log('🔗 Encoded referrer hookData:', hookData);
+      return hookData;
+    } catch (error) {
+      console.error('❌ Error encoding referrer hookData:', error);
+      // Return empty bytes if encoding fails
+      return '0x' as `0x${string}`;
+    }
   };
 
   if (!isConnected) {
@@ -1171,6 +1200,7 @@ export default function TradingCoins({
           )}
           <p>• Token Price: ${tokenPrice.toFixed(6)} USD</p>
           <p>• Slippage Tolerance: {(tradeState.slippage * 100).toFixed(1)}% {localStorage.getItem('trading-slippage') ? '(saved)' : ''}</p>
+          <p>• Referrer: {env.NEXT_PUBLIC_PLATFORM_REFERRER_ADDRESS.slice(0, 6)}...{env.NEXT_PUBLIC_PLATFORM_REFERRER_ADDRESS.slice(-4)}</p>
           <p>• Only Base mainnet is supported</p>
           <p>• Trading uses permit signatures for gasless approvals</p>
           <p>• Slippage protects against price changes during trade</p>
