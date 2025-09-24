@@ -6,7 +6,7 @@ import { tradeCoin, TradeParameters } from '@zoralabs/coins-sdk';
 import { useAccount, useWalletClient, usePublicClient, useConnect } from 'wagmi';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, ArrowUpDown, AlertCircle, CheckCircle, Wallet, Settings, RefreshCw, ExternalLink } from 'lucide-react';
@@ -415,7 +415,7 @@ export default function TradingCoins({
       }
 
       // Validate amountIn according to documentation
-      if (sellAmount <= 0n) {
+      if (sellAmount <= BigInt(0)) {
         throw new Error('Amount in must be greater than 0');
       }
 
@@ -483,7 +483,8 @@ export default function TradingCoins({
         amountIn: sellAmount,
         slippage: tradeState.slippage,
         sender: address,
-        hookData: hookData // Include referrer hookData
+        // Note: hookData is not part of TradeParameters interface
+        // The referrer functionality may need to be implemented differently
       };
 
       console.log('🔍 Final Trade Parameters:', tradeParameters);
@@ -494,7 +495,7 @@ export default function TradingCoins({
       console.log('🔗 HookData:', hookData);
 
       console.log('🚀 Calling tradeCoin...');
-      let receipt;
+      let receipt: any;
       
       // Try with different slippage strategies if first attempt fails
       const slippageStrategies = [
@@ -745,7 +746,7 @@ export default function TradingCoins({
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ArrowUpDown className="h-5 w-5" />
-            Trading Coins
+            Trade
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -986,7 +987,7 @@ export default function TradingCoins({
 
             {/* Token Output */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">You'll Receive</label>
+              <label className="text-sm font-medium">You&apos;ll Receive</label>
               <div className="bg-gray-50 border rounded-lg p-4">
                 <div className="text-lg font-bold text-gray-900">
                   {tradeState.estimatedOutput || '0.0'} {truncateTokenSymbol(tokenSymbol)}
@@ -1096,7 +1097,7 @@ export default function TradingCoins({
 
             {/* ETH Output */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">You'll Receive</label>
+              <label className="text-sm font-medium">You&apos;ll Receive</label>
               <div className="bg-gray-50 border rounded-lg p-4">
                 <div className="text-lg font-bold text-gray-900">
                   {tradeState.estimatedOutput || '0.0'} ETH
@@ -1136,7 +1137,7 @@ export default function TradingCoins({
         <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4 mb-4">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center shadow-sm">
-              <span className="text-white text-sm font-bold">Z</span>
+              <img src="/icozora.png" alt="Zora" className="w-6 h-6" />
             </div>
             <div className="flex-1">
               <div className="text-sm font-semibold text-blue-900 mb-1">
@@ -1177,35 +1178,6 @@ export default function TradingCoins({
 
 
         {/* Security Info */}
-        <div className="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
-          <div className="flex items-start gap-2">
-            <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-              <span className="text-green-600 text-xs">✓</span>
-            </div>
-            <div className="text-xs text-gray-600">
-              <div className="font-medium text-gray-800 mb-1">Security Features</div>
-              <div className="space-y-1">
-                <div>• Transactions are validated before execution</div>
-                <div>• Slippage protection prevents unexpected price changes</div>
-                <div>• All trades are executed on-chain with full transparency</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Info */}
-        <div className="text-xs text-muted-foreground space-y-1">
-          {tradeState.ethPrice && tradeState.priceSource && (
-            <p>• ETH Price: ${tradeState.ethPrice.toFixed(2)} USD (via {tradeState.priceSource})</p>
-          )}
-          <p>• Token Price: ${tokenPrice.toFixed(6)} USD</p>
-          <p>• Slippage Tolerance: {(tradeState.slippage * 100).toFixed(1)}% {localStorage.getItem('trading-slippage') ? '(saved)' : ''}</p>
-          <p>• Referrer: {env.NEXT_PUBLIC_PLATFORM_REFERRER_ADDRESS.slice(0, 6)}...{env.NEXT_PUBLIC_PLATFORM_REFERRER_ADDRESS.slice(-4)}</p>
-          <p>• Only Base mainnet is supported</p>
-          <p>• Trading uses permit signatures for gasless approvals</p>
-          <p>• Slippage protects against price changes during trade</p>
-          <p>• Estimated output is approximate, actual amount may vary</p>
-        </div>
       </CardContent>
     </Card>
   );

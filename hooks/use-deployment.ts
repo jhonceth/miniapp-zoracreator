@@ -6,7 +6,7 @@ import { prepareZoraDeploymentAction } from "@/lib/zora-deployment-server"
 import { getCoinCreateFromLogs } from "@zoralabs/coins-sdk"
 import { base, baseSepolia } from "viem/chains"
 import type { TokenFormData, CreatedToken } from "@/types/launch"
-import { createSerializableImageData, getSpecificErrorMessage, validateImageFile } from "@/lib/image-validation"
+import { createSerializableImageData, getSpecificErrorMessage, validateImageFileExtra } from "@/lib/image-validation"
 
 // Función para detectar si el error es por cancelación del usuario
 const isUserRejectedError = (error: any): boolean => {
@@ -125,7 +125,18 @@ export function useDeployment() {
     }
 
     // VALIDAR IMAGEN ANTES de serializar (evita procesar imágenes gigantes)
-    const imageValidation = validateImageFile(formData.image)
+    
+    // Validación extra antes de validateImageFile
+    if (!formData.image.type.startsWith("image/")) {
+      throw new Error("El archivo debe ser una imagen válida")
+    }
+    
+    if (formData.image.size > 25 * 1024 * 1024) { // 25MB
+      throw new Error(`Imagen demasiado grande: ${(formData.image.size / 1024 / 1024).toFixed(2)}MB (máximo 25MB)`)
+    }
+    
+    // Validación completa usando función centralizada con validación extra
+    const imageValidation = validateImageFileExtra(formData.image)
     if (!imageValidation.isValid) {
       throw new Error(imageValidation.error)
     }

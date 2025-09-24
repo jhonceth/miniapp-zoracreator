@@ -30,9 +30,7 @@ export async function getFarcasterManifest() {
       payload: env.NEXT_PUBLIC_FARCASTER_PAYLOAD,
       signature: env.NEXT_PUBLIC_FARCASTER_SIGNATURE,
     },
-    baseBuilder: {
-      allowedAddresses: ["0x5B436476E8D54575306eB34bC969D5e5A137B16b"]
-    },
+  
     frame: {
       version: "1",
       name: frameName,

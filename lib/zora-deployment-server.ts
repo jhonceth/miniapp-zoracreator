@@ -11,7 +11,7 @@ import {
 } from "@zoralabs/coins-sdk"
 import { Address, parseEther } from "viem"
 import { base, baseSepolia } from "viem/chains"
-import { validateImageFile, recreateImageFile, getSpecificErrorMessage, IMAGE_VALIDATION_CONFIG } from "./image-validation"
+import { validateImageFile, validateImageFileExtra, recreateImageFile, getSpecificErrorMessage, IMAGE_VALIDATION_CONFIG } from "./image-validation"
 
 interface ZoraDeploymentParams {
   name: string
@@ -72,11 +72,27 @@ export async function prepareZoraDeploymentAction(params: ZoraDeploymentParams) 
     console.log("🔄 Convirtiendo datos de imagen...")
     const imageFile = recreateImageFile(params.imageData)
 
-    // Validar archivo usando validación centralizada
+    // Validación adicional antes de procesar
     console.log("🔍 Validando archivo de imagen...")
-    const validation = validateImageFile(imageFile)
-    if (!validation.isValid) {
-      throw new Error(validation.error || "Invalid image file")
+    
+    // Validación extra antes de validateImageFile
+    if (!imageFile.type.startsWith("image/")) {
+      throw new Error("El archivo debe ser una imagen válida")
+    }
+    
+    if (imageFile.size > IMAGE_VALIDATION_CONFIG.MAX_SIZE) {
+      throw new Error(`Imagen demasiado grande: ${(imageFile.size / 1024 / 1024).toFixed(2)}MB (máximo ${IMAGE_VALIDATION_CONFIG.UI_INFO.MAX_SIZE_MB}MB)`)
+    }
+    
+    // Validación completa usando función centralizada con validación extra
+    const imageValidation = validateImageFileExtra(imageFile)
+    if (!imageValidation.isValid) {
+      throw new Error(imageValidation.error || "Invalid image file")
+    }
+    
+    // Validar que el archivo recreado tenga el tamaño esperado
+    if (imageFile.size !== params.imageData.size) {
+      console.warn(`⚠️ Size mismatch: expected ${params.imageData.size}, got ${imageFile.size}`)
     }
     
     console.log(`✅ Imagen validada: ${imageFile.name} (${imageFile.type}, ${(imageFile.size / 1024 / 1024).toFixed(2)}MB)`)

@@ -15,7 +15,7 @@ const nextConfig = {
   // Configurar límite de tamaño para Server Actions
   experimental: {
     serverActions: {
-      bodySizeLimit: '10mb', // Permitir hasta 10MB para imágenes
+      bodySizeLimit: '25mb', // Permitir hasta 25MB para imágenes
     },
   },
 };

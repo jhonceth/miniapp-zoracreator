@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAccount } from "wagmi";
 import { useRouter } from "next/navigation";
 import { getCoin } from "@zoralabs/coins-sdk";
@@ -37,6 +37,7 @@ import {
 import { UpdateURIModal } from "@/components/UpdateURIModal";
 import { UpdatePayoutRecipientModal } from "@/components/UpdatePayoutRecipientModal";
 import TradingCoins from "@/components/TradingCoins";
+import { useCreatorProfileLazy } from "@/hooks/use-creator-profile-lazy";
 
 interface TokenProfileProps {
   address: string;
@@ -51,10 +52,14 @@ export function TokenProfile({ address }: TokenProfileProps) {
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [isUpdateURIModalOpen, setIsUpdateURIModalOpen] = useState(false);
   const [isUpdatePayoutModalOpen, setIsUpdatePayoutModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'stats' | 'creator'>('stats');
+
+  // Lazy loading para el perfil del creador
+  const { profile: creatorProfile, isLoading: isLoadingCreator, error: creatorError, loadProfile: loadCreatorProfile } = useCreatorProfileLazy(coin?.creatorAddress || '', activeTab === 'creator');
 
   console.log("🔍 TokenProfile - Address recibida:", address);
 
-  const fetchCoinData = async () => {
+  const fetchCoinData = useCallback(async () => {
     if (!address) return;
     
     setIsLoading(true);
@@ -78,11 +83,11 @@ export function TokenProfile({ address }: TokenProfileProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [address]);
 
   useEffect(() => {
     fetchCoinData();
-  }, [address]);
+  }, [address, fetchCoinData]);
 
   const copyToClipboard = async (text: string, type: string) => {
     try {
@@ -243,109 +248,102 @@ export function TokenProfile({ address }: TokenProfileProps) {
 
       {/* Content */}
       <div className="px-4 py-6 pb-20">
-        {/* Token Banner */}
-        <Card className="overflow-hidden border-0 shadow-xl relative mb-6">
-          <div className="bg-gradient-to-r from-purple-600 via-pink-600 to-purple-700 p-6 text-white">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
+        {/* Token Header - CoinMarketCap Style */}
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm mb-4 overflow-hidden">
+          {/* Token Info Header */}
+          <div className="p-4 border-b border-gray-100">
+            <div className="flex items-center gap-3">
                 <div className="flex-shrink-0">
                   {coin.mediaContent?.previewImage?.medium ? (
                     <img 
                       src={coin.mediaContent.previewImage.medium} 
                       alt={`${coin.name} logo`}
-                      className="w-20 h-20 rounded-xl object-cover border-4 border-white/20 shadow-lg"
+                      className="w-12 h-12 rounded-lg object-cover"
                     />
                   ) : (
-                    <div className="w-20 h-20 bg-white/20 rounded-xl flex items-center justify-center border-4 border-white/20 shadow-lg">
-                      <span className="text-white text-2xl font-bold">
+                    <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                      <span className="text-white text-lg font-bold">
                         {coin.symbol?.charAt(0) || coin.name?.charAt(0) || "T"}
                       </span>
                     </div>
                   )}
                 </div>
-                <div>
-                  <h1 className="text-3xl font-bold">{coin.name}</h1>
-                  <p className="text-xl text-white/80 font-medium">{coin.symbol}</p>
-                  <div className="flex items-center gap-2 mt-2">
-                    <div className="flex items-center gap-1 bg-white/20 px-2 py-1 rounded-md border border-white/30">
-                      <img src="/base.png" alt="Base Mainnet" className="w-4 h-4" />
-                      <span className="text-white text-xs font-medium">Mainnet</span>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <h1 className="text-lg font-bold text-gray-900 truncate">{coin.name}</h1>
+                  <span className="text-sm font-medium text-gray-500">({coin.symbol})</span>
                     </div>
-                    <Badge className="bg-green-500/20 text-green-100 border-green-500/30">
-                      LIVE
-                    </Badge>
+                <div className="flex items-center gap-2 mt-1">
+                  <div className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded-md">
+                    <img src="/base.png" alt="Base" className="w-3 h-3" />
+                    <span className="text-xs text-gray-600">Base</span>
                   </div>
+                  <button
+                    onClick={() => copyToClipboard(address, "address")}
+                    className="p-1 hover:bg-gray-200 rounded-md transition-colors"
+                    title="Copy contract address"
+                  >
+                    {copiedField === "address" ? (
+                      <CheckCircle className="h-3 w-3 text-green-600" />
+                    ) : (
+                      <Copy className="h-3 w-3 text-gray-500" />
+                    )}
+                  </button>
+                  <a
+                    href={`https://dexscreener.com/base/${address}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-1 hover:bg-gray-200 rounded-md transition-colors"
+                    title="DexScreener"
+                  >
+                    <img src="/dexs.ico" alt="DexScreener" className="w-3 h-3" />
+                  </a>
+                  <a
+                    href={`https://basescan.org/address/${address}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-1 hover:bg-gray-200 rounded-md transition-colors"
+                    title="BaseScan"
+                  >
+                    <img src="/bscan.png" alt="BaseScan" className="w-3 h-3" />
+                  </a>
+                  <a
+                    href={`${env.NEXT_PUBLIC_ZBASE_ANALYTICS_URL}/token/${address}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-1 hover:bg-gray-200 rounded-md transition-colors"
+                    title="ZBase Analytics"
+                  >
+                    <img src="/icom.png" alt="ZBase Analytics" className="w-3 h-3" />
+                  </a>
+                  <a
+                    href={`https://zora.co/coin/base:${address}?referrer=${env.NEXT_PUBLIC_PLATFORM_REFERRER_ADDRESS}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-1 hover:bg-gray-200 rounded-md transition-colors"
+                    title="Zora"
+                  >
+                    <img src="/icozora.png" alt="Zora" className="w-3 h-3" />
+                  </a>
                 </div>
               </div>
             </div>
           </div>
-        </Card>
 
-        {/* Financial Metrics Grid */}
-        <div className="grid grid-cols-2 gap-3 mb-6">
-          <div className="bg-gray-50 p-4 rounded-lg flex items-center justify-center">
-            <div className="text-center">
-              <div className="text-xs text-gray-500 mb-1">PRICE</div>
-              <div className="text-2xl font-semibold text-gray-900">
+          {/* Price Section */}
+          <div className="p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <div className="text-2xl font-bold text-gray-900">
                 {coin.tokenPrice?.priceInUsdc ? 
                   new Intl.NumberFormat("en-US", {
                     style: "currency",
                     currency: "USD",
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 6,
-                  }).format(parseFloat(coin.tokenPrice.priceInUsdc)) : "N/A"}
+                    }).format(parseFloat(coin.tokenPrice.priceInUsdc)) : "$0.00"}
               </div>
-            </div>
-          </div>
-          
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <div className="text-xs text-gray-500 mb-1">MARKET CAP</div>
-            <div className="text-lg font-semibold text-gray-900">
-              {coin.marketCap ? 
-                (() => {
-                  const cap = parseFloat(coin.marketCap) || 0
-                  if (cap >= 1e9) return `$${(cap / 1e9).toFixed(1)}B`
-                  else if (cap >= 1e6) return `$${(cap / 1e6).toFixed(1)}M`
-                  else if (cap >= 1e3) return `$${(cap / 1e3).toFixed(1)}K`
-                  else return `$${cap.toFixed(2)}`
-                })() : "N/A"}
-            </div>
-          </div>
-          
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <div className="text-xs text-gray-500 mb-1">VOLUME 24H</div>
-            <div className="text-lg font-semibold text-gray-900">
-              {coin.volume24h ? 
-                (() => {
-                  const vol = parseFloat(coin.volume24h) || 0
-                  if (vol >= 1e9) return `$${(vol / 1e9).toFixed(1)}B`
-                  else if (vol >= 1e6) return `$${(vol / 1e6).toFixed(1)}M`
-                  else if (vol >= 1e3) return `$${(vol / 1e3).toFixed(1)}K`
-                  else return `$${vol.toFixed(2)}`
-                })() : "N/A"}
-            </div>
-          </div>
-          
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <div className="text-xs text-gray-500 mb-1">TOTAL SUPPLY</div>
-            <div className="text-lg font-semibold text-gray-900">
-              {coin.totalSupply ? 
-                (() => {
-                  const supply = parseFloat(coin.totalSupply) || 0
-                  if (supply >= 1e9) return `${(supply / 1e9).toFixed(1)}B`
-                  else if (supply >= 1e6) return `${(supply / 1e6).toFixed(1)}M`
-                  else if (supply >= 1e3) return `${(supply / 1e3).toFixed(1)}K`
-                  else return supply.toLocaleString()
-                })() : "N/A"}
-            </div>
-          </div>
-        </div>
-
-        {/* Performance Changes */}
-        <div className="flex gap-2 mb-6">
-          <div className="flex-1 bg-gray-50 p-3 rounded-lg text-center">
-            <div className="text-sm text-gray-500 mb-1">24H</div>
-            <div className={`text-base font-semibold ${
+                <div className={`text-sm font-medium ${
               coin.marketCapDelta24h && coin.marketCap ? 
                 (() => {
                   const currentMarketCap = parseFloat(coin.marketCap) || 0
@@ -368,125 +366,327 @@ export function TokenProfile({ address }: TokenProfileProps) {
                     percentageChange = (change24h / marketCap24hAgo) * 100
                   }
                   return `${percentageChange >= 0 ? "+" : ""}${percentageChange.toFixed(2)}%`
-                })() : "0.00%"}
+                    })() : "0.00%"} (24h)
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-sm text-gray-500">Market Cap</div>
+            <div className="text-lg font-semibold text-gray-900">
+              {coin.marketCap ? 
+                (() => {
+                  const cap = parseFloat(coin.marketCap) || 0
+                  if (cap >= 1e9) return `$${(cap / 1e9).toFixed(1)}B`
+                  else if (cap >= 1e6) return `$${(cap / 1e6).toFixed(1)}M`
+                  else if (cap >= 1e3) return `$${(cap / 1e3).toFixed(1)}K`
+                  else return `$${cap.toFixed(2)}`
+                })() : "N/A"}
+            </div>
+              </div>
             </div>
           </div>
           
-          <div className="flex-1 bg-gray-50 p-3 rounded-lg text-center">
-            <div className="text-sm text-gray-500 mb-1">HOLDERS</div>
-            <div className="text-base font-semibold text-gray-900">
-              {coin.uniqueHolders || "N/A"}
+          {/* About Section */}
+          {coin.description && (
+            <div className="px-4 pb-4">
+              <div className="bg-gray-50 rounded-lg p-3">
+                <div className="text-xs text-gray-500 font-medium mb-2">About {coin.name}</div>
+                <p className="text-xs text-gray-600 leading-relaxed">{coin.description}</p>
+              </div>
             </div>
+          )}
+
           </div>
           
-          <div className="flex-1 bg-gray-50 p-3 rounded-lg text-center">
-            <div className="text-sm text-gray-500 mb-1">CREATED</div>
-            <div className="text-base font-semibold text-gray-900">
+        {/* Stats Tabs */}
+        <div className="bg-white border border-gray-200 rounded-xl mb-4 overflow-hidden">
+          {/* Tab Headers */}
+          <div className="flex border-b border-gray-200">
+            <button
+              onClick={() => setActiveTab('stats')}
+              className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+                activeTab === 'stats'
+                  ? 'bg-gray-50 text-gray-900 border-b-2 border-blue-500'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              Stats
+            </button>
+            <button
+              onClick={() => setActiveTab('creator')}
+              className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+                activeTab === 'creator'
+                  ? 'bg-gray-50 text-gray-900 border-b-2 border-blue-500'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              Creator
+            </button>
+          </div>
+
+          {/* Tab Content */}
+          <div className="p-4">
+            {activeTab === 'stats' && (
+              <div className="grid grid-cols-2 gap-4">
+                <div className="text-center">
+                  <div className="text-xs text-gray-500 mb-1">Volume 24h</div>
+                  <div className="text-lg font-semibold text-gray-900">
+                    {coin.volume24h ? 
+                      (() => {
+                        const vol = parseFloat(coin.volume24h) || 0
+                        if (vol >= 1e9) return `$${(vol / 1e9).toFixed(1)}B`
+                        else if (vol >= 1e6) return `$${(vol / 1e6).toFixed(1)}M`
+                        else if (vol >= 1e3) return `$${(vol / 1e3).toFixed(1)}K`
+                        else return `$${vol.toFixed(2)}`
+                      })() : "N/A"}
+                  </div>
+                </div>
+                
+                <div className="text-center">
+                  <div className="text-xs text-gray-500 mb-1">Total Supply</div>
+                  <div className="text-lg font-semibold text-gray-900">
+                    {coin.totalSupply ? 
+                      (() => {
+                        const supply = parseFloat(coin.totalSupply) || 0
+                        if (supply >= 1e9) return `${(supply / 1e9).toFixed(1)}B`
+                        else if (supply >= 1e6) return `${(supply / 1e6).toFixed(1)}M`
+                        else if (supply >= 1e3) return `${(supply / 1e3).toFixed(1)}K`
+                        else return supply.toLocaleString()
+                      })() : "N/A"}
+                  </div>
+                </div>
+                
+                <div className="text-center">
+                  <div className="text-xs text-gray-500 mb-1">Holders</div>
+                  <div className="text-lg font-semibold text-gray-900">
+                    {coin.uniqueHolders || "N/A"}
+                  </div>
+                </div>
+                
+                <div className="text-center">
+                  <div className="text-xs text-gray-500 mb-1">Created</div>
+                  <div className="text-lg font-semibold text-gray-900">
               {coin.createdAt ? 
                 new Date(coin.createdAt).toLocaleDateString("en-US", {
-                  year: "numeric",
                   month: "short",
-                  day: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit"
+                        day: "numeric"
                 }) : "N/A"}
             </div>
           </div>
         </div>
+            )}
 
-        {/* Token Details - Compact Layout */}
-        <div className="space-y-4 mb-6">
-          {/* Contract Address */}
-          <div className="flex items-center gap-3">
-            <label className="text-sm font-medium text-gray-600 flex items-center gap-2 min-w-fit">
-              <FileText className="w-4 h-4" />
-              Contract
-            </label>
-            <p className="font-mono text-sm bg-gray-50 p-3 rounded-lg flex-1">
-              {address.slice(0, 6)}...{address.slice(-4)}
-            </p>
-            <Button
-              variant="outline"
-              size="sm"
-              asChild
-              className="w-10 h-10 p-1"
-            >
-              <a
-                href={`https://basescan.org/address/${address}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center"
-              >
-                <img src="/bscan.png" alt="BaseScan" className="w-6 h-6 object-contain" />
-              </a>
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => copyToClipboard(address, "address")}
-              className="w-10 h-10 p-1"
-            >
-              {copiedField === "address" ? (
-                <CheckCircle className="h-5 w-5" />
-              ) : (
-                <Copy className="h-5 w-5" />
-              )}
-            </Button>
-          </div>
+            {activeTab === 'creator' && (
+              <div className="space-y-4">
+                {isLoadingCreator && (
+                  <div className="flex items-center justify-center gap-2 py-8">
+                    <RefreshCw className="w-5 h-5 animate-spin text-gray-500" />
+                    <span className="text-sm text-gray-500">Loading creator profile...</span>
+                  </div>
+                )}
 
-          {/* Network */}
-          <div className="flex items-center gap-3">
-            <label className="text-sm font-medium text-gray-600 flex items-center gap-2 min-w-fit">
-              <Network className="w-4 h-4" />
-              Network
-            </label>
-            <div className="flex items-center gap-2 bg-gray-50 p-3 rounded-lg flex-1">
-              <img src="/base.png" alt="Base Mainnet" className="w-4 h-4" />
-              <p className="font-mono text-sm text-gray-900">
-                Base Mainnet
-              </p>
-            </div>
-          </div>
+                {creatorError && (
+                  <div className="text-center py-8">
+                    <div className="text-sm text-red-600 mb-2">
+                      Error loading profile: {creatorError}
+                    </div>
+                    <button
+                      onClick={loadCreatorProfile}
+                      className="text-sm font-medium text-blue-600 hover:text-blue-700"
+                    >
+                      Try Again
+                    </button>
+                  </div>
+                )}
+
+                {creatorProfile && (
+                  <div className="space-y-4">
+                    {/* Header con avatar y nombre */}
+                    <div className="text-center">
+                      {creatorProfile.avatar?.medium && (
+                        <button
+                          onClick={() => {
+                            if (creatorProfile.creatorCoin?.address) {
+                              router.push(`/token/${creatorProfile.creatorCoin.address}?from=/my-coins`);
+                            }
+                          }}
+                          className="block w-20 h-20 mx-auto mb-3 hover:opacity-80 transition-opacity cursor-pointer"
+                          disabled={!creatorProfile.creatorCoin?.address}
+                        >
+                          <img 
+                            src={creatorProfile.avatar.medium} 
+                            alt="Creator avatar" 
+                            className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
+                          />
+                        </button>
+                      )}
+                      
+                      <div className="text-lg font-semibold text-gray-900 mb-1">
+                        {creatorProfile.displayName || creatorProfile.username || 'Unknown Creator'}
+                      </div>
+                      <div className="flex items-center justify-center gap-2 mb-2">
+                        <div className="text-sm text-gray-500">
+                          @{creatorProfile.handle || creatorProfile.username || 'unknown'}
+                        </div>
+                        
+                        {/* Creator Coin Address Button */}
+                        {creatorProfile.creatorCoin?.address && (
+                          <button
+                            onClick={() => copyToClipboard(creatorProfile.creatorCoin?.address || '', 'creator-coin-address')}
+                            className="p-1 bg-blue-50 hover:bg-blue-100 rounded transition-colors group"
+                            title="Copy Creator Coin address"
+                          >
+                            {copiedField === 'creator-coin-address' ? (
+                              <CheckCircle className="h-4 w-4 text-green-600" />
+                            ) : (
+                              <Copy className="h-4 w-4 text-blue-600 group-hover:text-blue-700" />
+                            )}
+                          </button>
+                        )}
+                      </div>
+                      
+                      {creatorProfile.bio && (
+                        <div className="text-sm text-gray-600 mb-3 px-2">
+                          {creatorProfile.bio}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Social Links */}
+                    <div className="flex justify-center gap-3">
+                      {creatorProfile.socialAccounts?.twitter && (
+          <a
+                          href={`https://twitter.com/${creatorProfile.socialAccounts.twitter.username}`}
+            target="_blank"
+            rel="noopener noreferrer"
+                          className="flex items-center gap-1 px-3 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+          >
+                          <img src="/x.png" alt="Twitter" className="w-4 h-4" />
+                          <span className="text-xs font-medium">Twitter</span>
+          </a>
+                      )}
+                      
+                      {creatorProfile.socialAccounts?.farcaster && (
+          <a
+                          href={`https://warpcast.com/${creatorProfile.socialAccounts.farcaster.username}`}
+            target="_blank"
+            rel="noopener noreferrer"
+                          className="flex items-center gap-1 px-3 py-2 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition-colors"
+          >
+                          <img src="/farcaster.png" alt="Farcaster" className="w-4 h-4" />
+                          <span className="text-xs font-medium">Farcaster</span>
+          </a>
+                      )}
+
+                      {/* Zora Profile Link */}
+          <a
+                        href={`https://zora.co/${creatorProfile.handle || creatorProfile.username}`}
+            target="_blank"
+            rel="noopener noreferrer"
+                        className="flex items-center gap-1 px-3 py-2 bg-gray-50 text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
+          >
+                        <img src="/icozora.png" alt="Zora" className="w-4 h-4" />
+                        <span className="text-xs font-medium">Zora</span>
+          </a>
         </div>
 
-        {/* External Links */}
-        <div className="flex gap-2 mb-6">
-          <a
-            href={`https://dexscreener.com/base/${address}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-            title="DexScreener"
-          >
-            <img src="/dexs.ico" alt="DexScreener" className="w-6 h-6" />
-          </a>
-          <a
-            href={`https://basescan.org/address/${address}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-            title="BaseScan"
-          >
-            <img src="/bscan.png" alt="BaseScan" className="w-6 h-6" />
-          </a>
-          <a
-            href={`${env.NEXT_PUBLIC_ZBASE_ANALYTICS_URL}/token/${address}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-            title="ZBase Analytics"
-          >
-            <img src="/icom.png" alt="ZBase Analytics" className="w-6 h-6" />
-          </a>
-        </div>
+                    {/* Creator Coin Info */}
+                    {creatorProfile.creatorCoin && (
+                      <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-3">
+                        <div className="text-sm font-semibold text-gray-900 mb-2">Creator Coin</div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="text-center">
+                            <div className="text-xs text-gray-500 mb-1">Market Cap</div>
+                            <div className="text-sm font-semibold text-gray-900">
+                              {creatorProfile.creatorCoin.marketCap ? 
+                                (() => {
+                                  const cap = parseFloat(creatorProfile.creatorCoin.marketCap) || 0
+                                  if (cap >= 1e9) return `$${(cap / 1e9).toFixed(1)}B`
+                                  else if (cap >= 1e6) return `$${(cap / 1e6).toFixed(1)}M`
+                                  else if (cap >= 1e3) return `$${(cap / 1e3).toFixed(1)}K`
+                                  else return `$${cap.toFixed(2)}`
+                                })() : "N/A"
+                              }
+                            </div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-xs text-gray-500 mb-1">24h Change</div>
+                            <div className={`text-sm font-semibold ${
+                              creatorProfile.creatorCoin.marketCapDelta24h && parseFloat(creatorProfile.creatorCoin.marketCapDelta24h) >= 0 ? 'text-green-600' : 'text-red-600'
+                            }`}>
+                              {creatorProfile.creatorCoin.marketCapDelta24h ? 
+                                `${parseFloat(creatorProfile.creatorCoin.marketCapDelta24h) >= 0 ? '+' : ''}${parseFloat(creatorProfile.creatorCoin.marketCapDelta24h).toFixed(2)}%` : 
+                                "N/A"
+                              }
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
-        {/* Description */}
-        {coin.description && (
-          <div className="bg-gray-50 p-4 rounded-lg mb-6">
-            <h3 className="text-sm font-semibold mb-2 text-gray-900">Description</h3>
-            <p className="text-sm text-gray-600">{coin.description}</p>
+                    {/* Wallet Info */}
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <div className="text-sm font-semibold text-gray-900 mb-2">Wallet Information</div>
+                      <div className="flex items-center justify-between">
+                        <div className="text-xs text-gray-500">
+                          {coin.creatorAddress ? 
+                            `${coin.creatorAddress.slice(0, 6)}...${coin.creatorAddress.slice(-4)}` : 
+                            "Unknown"
+                          }
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => copyToClipboard(coin.creatorAddress || '', 'creator-wallet')}
+                            className="p-1 hover:bg-gray-200 rounded transition-colors"
+                            title="Copy wallet address"
+                          >
+                            {copiedField === 'creator-wallet' ? (
+                              <CheckCircle className="h-4 w-4 text-green-600" />
+                            ) : (
+                              <Copy className="h-4 w-4 text-gray-500" />
+                            )}
+                          </button>
+                          <a
+                            href={`https://basescan.org/address/${coin.creatorAddress}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-1 hover:bg-gray-200 rounded transition-colors"
+                            title="View on BaseScan"
+                          >
+                            <ExternalLink className="h-4 w-4 text-gray-500" />
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Creation Date */}
+                    <div className="text-center">
+                      <div className="text-xs text-gray-500">
+                        Token created on {coin.createdAt ? 
+                          new Date(coin.createdAt).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric"
+                          }) : "Unknown date"
+                        }
+                      </div>
+                    </div>
           </div>
         )}
+
+                {!creatorProfile && !isLoadingCreator && !creatorError && (
+                  <div className="text-center py-8">
+                    <div className="text-sm text-gray-500">
+                      No creator profile available
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+
+
 
             {/* Trading Section */}
             <TradingCoins 
@@ -498,21 +698,21 @@ export function TokenProfile({ address }: TokenProfileProps) {
               className="mb-6"
             />
 
-        {/* Admin Section */}
+        {/* Admin Section - CoinMarketCap Style */}
         {isAdmin && (
-          <div className="bg-gray-50 p-4 rounded-lg mb-6">
-            <h3 className="text-sm font-semibold mb-2 flex items-center gap-2 text-gray-900">
+          <div className="bg-white border border-gray-200 rounded-xl p-4 mb-4">
+            <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
               <Settings className="w-4 h-4" />
-              Admin Only
+              Admin Controls
             </h3>
             <p className="text-xs text-gray-500 mb-4">
               These functions are available only for the token creator
             </p>
-            <div className="flex gap-3">
+            <div className="grid grid-cols-2 gap-3">
               <Button 
                 onClick={() => setIsUpdateURIModalOpen(true)}
                 variant="outline"
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 justify-center"
               >
                 <Edit className="h-4 w-4" />
                 Update URI
@@ -520,7 +720,7 @@ export function TokenProfile({ address }: TokenProfileProps) {
               <Button 
                 onClick={() => setIsUpdatePayoutModalOpen(true)}
                 variant="outline"
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 justify-center"
               >
                 <Edit className="h-4 w-4" />
                 Update Payout

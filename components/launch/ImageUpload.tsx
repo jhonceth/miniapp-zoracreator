@@ -6,8 +6,9 @@ import { useState, useCallback } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { Upload, X, AlertTriangle } from "lucide-react"
+import { Upload, X, AlertTriangle, HelpCircle } from "lucide-react"
 import { validateImageFile, IMAGE_VALIDATION_CONFIG } from "@/lib/image-validation";
+import { compressImageForZora, getCompressionInfo, getCompressionRecommendations } from "@/lib/image-compression";
 
 interface ImageUploadProps {
   onImageSelect: (file: File | null) => void;
@@ -19,6 +20,13 @@ export function ImageUpload({ onImageSelect, error }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false)
   const [dragActive, setDragActive] = useState(false)
   const [uploadError, setUploadError] = useState<string>("")
+  const [compressionInfo, setCompressionInfo] = useState<{
+    needsCompression: boolean;
+    currentSize: string;
+    recommendedSize: string;
+    message: string;
+  } | null>(null)
+  const [isOptimizing, setIsOptimizing] = useState(false)
 
   const handleFiles = useCallback(
     async (files: FileList | null) => {
@@ -37,21 +45,80 @@ export function ImageUpload({ onImageSelect, error }: ImageUploadProps) {
       setUploading(true)
 
       try {
+        // Compress image if needed
+        console.log("📦 Compressing image to optimize deployment...")
+        const compressionResult = await compressImageForZora(file)
+        const finalFile = compressionResult.compressedFile
+        
+        // Validate the compressed file
+        if (!finalFile || !(finalFile instanceof File)) {
+          throw new Error("Failed to process image file")
+        }
+        
+        if (finalFile.size === 0) {
+          throw new Error("Processed image file is empty")
+        }
+        
+        console.log("✅ Image processed successfully:", {
+          name: finalFile.name,
+          type: finalFile.type,
+          size: finalFile.size,
+          isFile: finalFile instanceof File
+        })
+        
+        const compressionDetails = getCompressionInfo(compressionResult)
+        console.log("📊 Compression result:", compressionDetails)
+        
+        // Only show compression info if the image was actually compressed
+        if (compressionResult.wasCompressed) {
+          const recommendations = getCompressionRecommendations(file)
+          setCompressionInfo(recommendations)
+          setIsOptimizing(true)
+        } else {
+          // Clear compression info if no compression was needed
+          setCompressionInfo(null)
+          setIsOptimizing(false)
+        }
+
         // Create preview
         const reader = new FileReader()
         reader.onload = () => {
           setPreview(reader.result as string)
-          onImageSelect(file)
+          onImageSelect(finalFile) // Use compressed file
           setUploading(false)
+          setIsOptimizing(false)
         }
         reader.onerror = () => {
           setUploadError("Error reading file")
           setUploading(false)
+          setIsOptimizing(false)
         }
-        reader.readAsDataURL(file)
+        reader.readAsDataURL(finalFile) // Use compressed file for preview
       } catch (err) {
-        setUploadError("Error processing image")
-        setUploading(false)
+        console.error("❌ Error processing image:", err)
+        
+        // Fallback: try with original file if compression failed
+        try {
+          console.log("🔄 Fallback: Using original file...")
+          const reader = new FileReader()
+          reader.onload = () => {
+            setPreview(reader.result as string)
+            onImageSelect(file) // Use original file as fallback
+            setUploading(false)
+            setIsOptimizing(false)
+          }
+          reader.onerror = () => {
+            setUploadError("Error reading file")
+            setUploading(false)
+            setIsOptimizing(false)
+          }
+          reader.readAsDataURL(file)
+        } catch (fallbackErr) {
+          console.error("❌ Fallback also failed:", fallbackErr)
+          setUploadError("Error processing image")
+          setUploading(false)
+          setIsOptimizing(false)
+        }
       }
     },
     [onImageSelect],
@@ -88,6 +155,8 @@ export function ImageUpload({ onImageSelect, error }: ImageUploadProps) {
   const removeImage = () => {
     setPreview(null)
     setUploadError("")
+    setCompressionInfo(null)
+    setIsOptimizing(false)
     onImageSelect(null)
   }
 
@@ -117,7 +186,7 @@ export function ImageUpload({ onImageSelect, error }: ImageUploadProps) {
                       <Upload className="w-6 h-6 text-gray-400 mx-auto" />
                     )}
                     <p className="text-xs font-medium">
-                      {uploading ? "Processing..." : "upload image"}
+                      {uploading ? (isOptimizing ? "Optimizing..." : "Processing...") : "upload image"}
                     </p>
                   </div>
                 </label>
@@ -148,6 +217,40 @@ export function ImageUpload({ onImageSelect, error }: ImageUploadProps) {
                 <X className="w-4 h-4 text-red-600" />
               </Button>
             </div>
+            
+            {/* Compression Info Tooltip - Only show if image was actually compressed */}
+            {compressionInfo && compressionInfo.needsCompression && (
+              <div className="mt-1 flex items-center justify-center">
+                <div className="flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 rounded-full text-xs">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                  <span className="text-blue-700 dark:text-blue-300 font-medium">
+                    {isOptimizing ? "Optimizing..." : "Compressed"}
+                  </span>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <HelpCircle className="w-3 h-3 text-blue-600 dark:text-blue-400 cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-xs bg-gray-900 dark:bg-gray-800 border-gray-700 text-white">
+                      <div className="space-y-1">
+                        <div className="font-medium text-blue-300">
+                          {isOptimizing ? "Optimizing Image..." : "Image Compressed"}
+                        </div>
+                        <div className="text-sm text-gray-200">
+                          {isOptimizing ? (
+                            <div>Compressing image to optimize deployment...</div>
+                          ) : compressionInfo ? (
+                            <>
+                              <div>Size: {compressionInfo.currentSize} → {compressionInfo.recommendedSize}</div>
+                              <div className="text-xs mt-1 text-gray-300">{compressionInfo.message}</div>
+                            </>
+                          ) : null}
+                        </div>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+              </div>
+            )}
           </Card>
         )}
         {displayError && (
