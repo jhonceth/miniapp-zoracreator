@@ -56,6 +56,11 @@ export async function getFarcasterManifest() {
       heroImageUrl: `${appUrl}/images/builders.png`, // 1200 x 630px (1.91:1), promotional display image on top of the mini app store
       ogImageUrl: `${appUrl}/images/builders.png`, // 1200 x 630px (1.91:1), promotional image, same as app hero image
       noindex: noindex,
-    },
+     },
+
+    //  SECCIÓN BASE BUILDER AGREGADA
+    baseBuilder: {
+      allowedAddresses: ["0x5B436476E8D54575306eB34bC969D5e5A137B16b"]
+    }
   };
 }

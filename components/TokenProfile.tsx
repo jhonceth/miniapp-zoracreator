@@ -37,6 +37,8 @@ import {
 import { UpdateURIModal } from "@/components/UpdateURIModal";
 import { UpdatePayoutRecipientModal } from "@/components/UpdatePayoutRecipientModal";
 import TradingCoins from "@/components/TradingCoins";
+import TimeSeriesChart from "@/components/TimeSeriesChart";
+import CandlestickChart from "@/components/CandlestickChart";
 import { useCreatorProfileLazy } from "@/hooks/use-creator-profile-lazy";
 
 interface TokenProfileProps {
@@ -53,6 +55,19 @@ export function TokenProfile({ address }: TokenProfileProps) {
   const [isUpdateURIModalOpen, setIsUpdateURIModalOpen] = useState(false);
   const [isUpdatePayoutModalOpen, setIsUpdatePayoutModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'stats' | 'creator'>('stats');
+  const [activeChartTab, setActiveChartTab] = useState<'timeseries' | 'candlestick'>('timeseries');
+  const [selectedPeriod, setSelectedPeriod] = useState<'1W' | '1M' | '3M' | '1Y' | 'ALL' | 'daily' | 'weekly' | 'monthly'>('1M');
+  
+  // Estados para datos de gráficos
+  const [seriesData, setSeriesData] = useState<any[]>([]);
+  const [isLoadingSeries, setIsLoadingSeries] = useState(false);
+  const [seriesError, setSeriesError] = useState<string | null>(null);
+  const [rawSeriesResponse, setRawSeriesResponse] = useState<any>(null);
+  
+  const [apiData, setApiData] = useState<any[]>([]);
+  const [isLoadingApi, setIsLoadingApi] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
+  const [rawApiResponse, setRawApiResponse] = useState<any>(null);
 
   // Lazy loading para el perfil del creador
   const { profile: creatorProfile, isLoading: isLoadingCreator, error: creatorError, loadProfile: loadCreatorProfile } = useCreatorProfileLazy(coin?.creatorAddress || '', activeTab === 'creator');
@@ -104,10 +119,80 @@ export function TokenProfile({ address }: TokenProfileProps) {
     fetchCoinData();
   };
 
+  // Función para cargar datos de la API (igual que en example)
+  const loadDataFromAPI = useCallback(async () => {
+    try {
+      setIsLoadingSeries(true);
+      setIsLoadingApi(true);
+      setSeriesError(null);
+      setApiError(null);
+      setRawSeriesResponse(null);
+      setRawApiResponse(null);
+      
+      console.log('🔍 Obteniendo datos de la API para:', address);
+      
+      // Mapear timeframes a parámetros de la API
+      const timeframeMap = {
+        '1W': '1W',
+        '1M': '1M',
+        '3M': '3M',
+        '1Y': '1Y',
+        'ALL': 'ALL',
+        'daily': '1W',    // Legacy: daily -> 1W
+        'weekly': '1M',   // Legacy: weekly -> 1M  
+        'monthly': '3M'   // Legacy: monthly -> 3M
+      };
+      
+      const timeframe = timeframeMap[selectedPeriod] || '1M';
+      
+      // Cargar datos para TimeSeries usando el sistema modular
+      const seriesResponse = await fetch(`/api/charts/data?contractAddress=${address}&network=base&timeframe=${timeframe}&chartType=line`);
+      const seriesData = await seriesResponse.json();
+      
+      // Cargar datos para Candlestick usando el sistema modular
+      const candlestickResponse = await fetch(`/api/charts/data?contractAddress=${address}&network=base&timeframe=${timeframe}&chartType=candlestick`);
+      const candlestickData = await candlestickResponse.json();
+      
+      if (seriesData.success && seriesData.chartData) {
+        setSeriesData(seriesData.chartData);
+        setRawSeriesResponse(seriesData);
+        console.log('✅ TimeSeries data loaded:', seriesData.chartData.length, 'points');
+      } else {
+        setSeriesError(seriesData.error || 'Unable to load price chart data. This token may be too new or have limited trading activity.');
+        console.error('❌ TimeSeries error:', seriesData.error);
+      }
+      
+      if (candlestickData.success && candlestickData.chartData) {
+        setApiData(candlestickData.chartData);
+        setRawApiResponse(candlestickData);
+        console.log('✅ Candlestick data loaded:', candlestickData.chartData.length, 'points');
+      } else {
+        setApiError(candlestickData.error || 'Unable to load candlestick chart data. This token may be too new or have limited trading activity.');
+        console.error('❌ Candlestick error:', candlestickData.error);
+      }
+      
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unable to load chart data. Please check your connection and try again.';
+      setSeriesError(errorMessage);
+      setApiError(errorMessage);
+      console.error('❌ Error loading chart data:', error);
+    } finally {
+      setIsLoadingSeries(false);
+      setIsLoadingApi(false);
+    }
+  }, [address, selectedPeriod]);
+
+  // Cargar datos de gráficos automáticamente cuando cambie la dirección
+  useEffect(() => {
+    if (address) {
+      loadDataFromAPI();
+    }
+  }, [address, selectedPeriod, loadDataFromAPI]);
+
   const shareToken = async () => {
-    const base = typeof window !== 'undefined' ? window.location.origin : ''
-    const url = `${base}/token/${address}?v=${Date.now()}`
-    const intent = `https://warpcast.com/~/compose?text=${encodeURIComponent(`Check out the performance of this ZoraCoin "${coin?.name || 'Token'}" Check stats here 📊`)}&embeds[]=${encodeURIComponent(url)}`
+    const base = typeof window !== 'undefined' ? window.location.origin : '';
+    const url = `${base}/token/${address}?v=${Date.now()}`;
+    const intent = `https://warpcast.com/~/compose?text=${encodeURIComponent(`Check out the performance of this ZoraCoin "${coin?.name || 'Token'}" Check stats here 📊`)}&embeds[]=${encodeURIComponent(url)}`;
     
     // Intento con Mini App composeCast si está disponible
     try {
@@ -405,7 +490,7 @@ export function TokenProfile({ address }: TokenProfileProps) {
               onClick={() => setActiveTab('stats')}
               className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
                 activeTab === 'stats'
-                  ? 'bg-gray-50 text-gray-900 border-b-2 border-blue-500'
+                  ? 'bg-green-50 text-green-700 border-b-2 border-green-500'
                   : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
               }`}
             >
@@ -415,7 +500,7 @@ export function TokenProfile({ address }: TokenProfileProps) {
               onClick={() => setActiveTab('creator')}
               className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
                 activeTab === 'creator'
-                  ? 'bg-gray-50 text-gray-900 border-b-2 border-blue-500'
+                  ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-500'
                   : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
               }`}
             >
@@ -426,53 +511,158 @@ export function TokenProfile({ address }: TokenProfileProps) {
           {/* Tab Content */}
           <div className="p-4">
             {activeTab === 'stats' && (
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center">
-                  <div className="text-xs text-gray-500 mb-1">Volume 24h</div>
-                  <div className="text-lg font-semibold text-gray-900">
-                    {coin.volume24h ? 
-                      (() => {
-                        const vol = parseFloat(coin.volume24h) || 0
-                        if (vol >= 1e9) return `$${(vol / 1e9).toFixed(1)}B`
-                        else if (vol >= 1e6) return `$${(vol / 1e6).toFixed(1)}M`
-                        else if (vol >= 1e3) return `$${(vol / 1e3).toFixed(1)}K`
-                        else return `$${vol.toFixed(2)}`
-                      })() : "N/A"}
+              <div className="space-y-6">
+                {/* Estadísticas básicas */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center">
+                    <div className="text-xs text-gray-500 mb-1">Volume 24h</div>
+                    <div className="text-lg font-semibold text-gray-900">
+                      {coin.volume24h ? 
+                        (() => {
+                          const vol = parseFloat(coin.volume24h) || 0
+                          if (vol >= 1e9) return `$${(vol / 1e9).toFixed(1)}B`
+                          else if (vol >= 1e6) return `$${(vol / 1e6).toFixed(1)}M`
+                          else if (vol >= 1e3) return `$${(vol / 1e3).toFixed(1)}K`
+                          else return `$${vol.toFixed(2)}`
+                        })() : "N/A"}
+                    </div>
                   </div>
-                </div>
-                
-                <div className="text-center">
-                  <div className="text-xs text-gray-500 mb-1">Total Supply</div>
-                  <div className="text-lg font-semibold text-gray-900">
-                    {coin.totalSupply ? 
-                      (() => {
-                        const supply = parseFloat(coin.totalSupply) || 0
-                        if (supply >= 1e9) return `${(supply / 1e9).toFixed(1)}B`
-                        else if (supply >= 1e6) return `${(supply / 1e6).toFixed(1)}M`
-                        else if (supply >= 1e3) return `${(supply / 1e3).toFixed(1)}K`
-                        else return supply.toLocaleString()
-                      })() : "N/A"}
+                  
+                  <div className="text-center">
+                    <div className="text-xs text-gray-500 mb-1">Total Supply</div>
+                    <div className="text-lg font-semibold text-gray-900">
+                      {coin.totalSupply ? 
+                        (() => {
+                          const supply = parseFloat(coin.totalSupply) || 0
+                          if (supply >= 1e9) return `${(supply / 1e9).toFixed(1)}B`
+                          else if (supply >= 1e6) return `${(supply / 1e6).toFixed(1)}M`
+                          else if (supply >= 1e3) return `${(supply / 1e3).toFixed(1)}K`
+                          else return supply.toLocaleString()
+                        })() : "N/A"}
+                    </div>
                   </div>
-                </div>
-                
-                <div className="text-center">
-                  <div className="text-xs text-gray-500 mb-1">Holders</div>
-                  <div className="text-lg font-semibold text-gray-900">
-                    {coin.uniqueHolders || "N/A"}
+                  
+                  <div className="text-center">
+                    <div className="text-xs text-gray-500 mb-1">Holders</div>
+                    <div className="text-lg font-semibold text-gray-900">
+                      {coin.uniqueHolders || "N/A"}
+                    </div>
                   </div>
-                </div>
-                
-                <div className="text-center">
-                  <div className="text-xs text-gray-500 mb-1">Created</div>
-                  <div className="text-lg font-semibold text-gray-900">
+                  
+                  <div className="text-center">
+                    <div className="text-xs text-gray-500 mb-1">Created</div>
+                    <div className="text-lg font-semibold text-gray-900">
               {coin.createdAt ? 
                 new Date(coin.createdAt).toLocaleDateString("en-US", {
                   month: "short",
-                        day: "numeric"
+                          day: "numeric"
                 }) : "N/A"}
             </div>
           </div>
         </div>
+
+                {/* Gráficos de precios */}
+                <div className="mt-6 mb-8">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Activity className="w-5 h-5" />
+                        Price Charts
+                      </CardTitle>
+                      <CardDescription>
+                        Historical price data and trading volume
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {/* Pestañas de gráficos */}
+                      <div className="flex space-x-1 mb-4">
+                        <button
+                          onClick={() => setActiveChartTab('timeseries')}
+                          className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                            activeChartTab === 'timeseries'
+                              ? 'bg-green-500 text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          Time Series
+                        </button>
+                        <button
+                          onClick={() => setActiveChartTab('candlestick')}
+                          className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                            activeChartTab === 'candlestick'
+                              ? 'bg-green-500 text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          Candlestick
+                        </button>
+                      </div>
+
+                      {/* Contenido de gráficos */}
+                      {activeChartTab === 'timeseries' && (
+                        <>
+                          {seriesData.length > 0 ? (
+                            <TimeSeriesChart
+                              data={seriesData}
+                              contractAddress={address}
+                              selectedPeriod={selectedPeriod}
+                              onPeriodChange={(period) => {
+                                setSelectedPeriod(period);
+                                // Recargar automáticamente al cambiar el período
+                                setTimeout(() => loadDataFromAPI(), 100);
+                              }}
+                              onFetchData={() => loadDataFromAPI()}
+                              isLoading={isLoadingSeries}
+                              error={seriesError}
+                              rawResponse={rawSeriesResponse}
+                              height={400}
+                            />
+                          ) : (
+                            <div className="text-center py-8">
+                              <div className="text-sm text-gray-500">
+                                {isLoadingSeries ? 'Loading chart data...' : 
+                                 seriesError ? seriesError : 
+                                 'No chart data available for this token.'}
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )}
+
+                      {activeChartTab === 'candlestick' && (
+                        <>
+                          {apiData.length > 0 ? (
+                            <CandlestickChart
+                              data={apiData}
+                              contractAddress={address}
+                              selectedPeriod={selectedPeriod}
+                              onPeriodChange={(period) => {
+                                setSelectedPeriod(period);
+                                // Recargar automáticamente al cambiar el período
+                                setTimeout(() => loadDataFromAPI(), 100);
+                              }}
+                              onFetchData={() => loadDataFromAPI()}
+                              isLoading={isLoadingApi}
+                              error={apiError}
+                              rawResponse={rawApiResponse}
+                              height={400}
+                            />
+                          ) : (
+                            <div className="text-center py-8">
+                              <div className="text-sm text-gray-500">
+                                {isLoadingApi ? 'Loading chart data...' : 
+                                 apiError ? apiError : 
+                                 'No chart data available for this token.'}
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+
+              </div>
             )}
 
             {activeTab === 'creator' && (
@@ -542,14 +732,14 @@ export function TokenProfile({ address }: TokenProfileProps) {
                             )}
                           </button>
                         )}
-                      </div>
-                      
+          </div>
+
                       {creatorProfile.bio && (
                         <div className="text-sm text-gray-600 mb-3 px-2">
                           {creatorProfile.bio}
-                        </div>
+            </div>
                       )}
-                    </div>
+        </div>
 
                     {/* Social Links */}
                     <div className="flex justify-center gap-3">

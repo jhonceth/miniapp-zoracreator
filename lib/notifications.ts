@@ -14,9 +14,17 @@ export async function getUserNotificationDetails(
     return null;
   }
 
-  return await redis.get<MiniAppNotificationDetails>(
+  const result = await redis.get(
     getUserNotificationDetailsKey(fid)
   );
+  if (result) {
+    try {
+      return JSON.parse(result) as MiniAppNotificationDetails;
+    } catch {
+      return null;
+    }
+  }
+  return null;
 }
 
 export async function setUserNotificationDetails(
@@ -27,7 +35,7 @@ export async function setUserNotificationDetails(
     return;
   }
 
-  await redis.set(getUserNotificationDetailsKey(fid), notificationDetails);
+  await redis.set(getUserNotificationDetailsKey(fid), JSON.stringify(notificationDetails));
 }
 
 export async function deleteUserNotificationDetails(

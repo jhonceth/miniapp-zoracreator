@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getCachedPrice, setCachedPrice, CACHE_KEYS, CACHE_TTL } from '@/lib/priceCache';
 
 interface PriceResponse {
   price: number;
@@ -64,7 +65,18 @@ async function fetchPriceFromAPI(api: typeof PRICE_APIS[0]): Promise<number | nu
 
 export async function GET(request: NextRequest) {
   try {
-    // Try each API in order until one succeeds
+    // Verificar cache primero
+    const cachedData = await getCachedPrice(CACHE_KEYS.ETH_PRICE);
+    if (cachedData) {
+      return NextResponse.json(cachedData, {
+        headers: {
+          'Cache-Control': 'public, max-age=20', // Cache for 20 seconds
+          'X-Cache': 'HIT',
+        },
+      });
+    }
+
+    // Si no hay cache, obtener precio de las APIs
     for (const api of PRICE_APIS) {
       const price = await fetchPriceFromAPI(api);
       
@@ -75,15 +87,19 @@ export async function GET(request: NextRequest) {
           timestamp: new Date().toISOString()
         };
 
+        // Guardar en cache por 20 segundos
+        await setCachedPrice(CACHE_KEYS.ETH_PRICE, response, CACHE_TTL.PRICES);
+
         return NextResponse.json(response, {
           headers: {
-            'Cache-Control': 'public, max-age=60', // Cache for 1 minute
+            'Cache-Control': 'public, max-age=20', // Cache for 20 seconds
+            'X-Cache': 'MISS',
           },
         });
       }
     }
 
-    // If all APIs fail, return error
+    // Si all APIs fail, return error
     return NextResponse.json(
       { error: 'All price APIs are currently unavailable' },
       { status: 503 }
