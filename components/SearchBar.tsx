@@ -79,7 +79,7 @@ export default function SearchBar() {
       </button>
 
       {isOpen && (
-        <div className="absolute top-10 left-1/2 transform -translate-x-1/2 w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50 animate-in fade-in slide-in-from-top-5">
+        <div className="absolute top-10 left-1/2 transform -translate-x-1/2 w-[70%] max-w-md bg-white rounded-lg shadow-xl border border-gray-200 z-50 animate-in fade-in slide-in-from-top-5">
           <div className="p-4 border-b border-gray-100">
             <input
               ref={inputRef}

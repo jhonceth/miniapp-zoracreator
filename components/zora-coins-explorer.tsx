@@ -30,7 +30,7 @@ export function ZoraCoinsExplorer() {
                     <span className="text-xs font-medium hidden md:inline">Top Gainers</span>
                   </TabsTrigger>
                 </TooltipTrigger>
-                <TooltipContent side="bottom" className="md:hidden">
+                <TooltipContent side="bottom">
                   <p className="font-medium">Top Gainers</p>
                   <p className="text-xs text-muted-foreground">Coins with highest price increase</p>
                 </TooltipContent>
@@ -46,7 +46,7 @@ export function ZoraCoinsExplorer() {
                     <span className="text-xs font-medium hidden md:inline">Top Volume</span>
                   </TabsTrigger>
                 </TooltipTrigger>
-                <TooltipContent side="bottom" className="md:hidden">
+                <TooltipContent side="bottom">
                   <p className="font-medium">Top Volume</p>
                   <p className="text-xs text-muted-foreground">Highest 24h trading volume</p>
                 </TooltipContent>
@@ -62,7 +62,7 @@ export function ZoraCoinsExplorer() {
                     <span className="text-xs font-medium hidden md:inline">Most Valuable</span>
                   </TabsTrigger>
                 </TooltipTrigger>
-                <TooltipContent side="bottom" className="md:hidden">
+                <TooltipContent side="bottom">
                   <p className="font-medium">Most Valuable</p>
                   <p className="text-xs text-muted-foreground">Highest market capitalization</p>
                 </TooltipContent>
@@ -78,7 +78,7 @@ export function ZoraCoinsExplorer() {
                     <span className="text-xs font-medium hidden md:inline">Creator Coin</span>
                   </TabsTrigger>
                 </TooltipTrigger>
-                <TooltipContent side="bottom" className="md:hidden">
+                <TooltipContent side="bottom">
                   <p className="font-medium">Creator Coin</p>
                   <p className="text-xs text-muted-foreground">Top creators by market cap</p>
                 </TooltipContent>
@@ -94,7 +94,7 @@ export function ZoraCoinsExplorer() {
                     <span className="text-xs font-medium hidden md:inline">Favorites</span>
                   </TabsTrigger>
                 </TooltipTrigger>
-                <TooltipContent side="bottom" className="md:hidden">
+                <TooltipContent side="bottom">
                   <p className="font-medium">Favorites</p>
                   <p className="text-xs text-muted-foreground">Your saved favorite coins</p>
                 </TooltipContent>
