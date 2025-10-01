@@ -1,23 +1,8 @@
-import { createClient } from "redis";
-import { env } from "process";
-
-if (!env.REDIS_URL) {
-  console.warn(
-    "REDIS_URL environment variable is not defined, please add to enable price caching.",
-  );
-}
-
-export const redis = env.REDIS_URL ? createClient({
-  url: env.REDIS_URL,
-}) : null;
-
-// Conectar Redis si está disponible
-if (redis) {
-  redis.connect().catch(console.error);
-}
+import { getRedis } from "./redis";
 
 export async function getCachedPrice(key: string): Promise<any | null> {
   try {
+    const redis = getRedis();
     if (!redis) return null;
     const cached = await redis.get(key);
     return cached ? JSON.parse(String(cached)) : null;
@@ -29,6 +14,7 @@ export async function getCachedPrice(key: string): Promise<any | null> {
 
 export async function setCachedPrice(key: string, value: any, ttl: number) {
   try {
+    const redis = getRedis();
     if (!redis) return;
     await redis.setEx(key, ttl, JSON.stringify(value));
   } catch (error) {

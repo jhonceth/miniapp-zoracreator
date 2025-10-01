@@ -1,7 +1,8 @@
-import { redis } from "./redis";
+import { getRedis } from "./redis";
 
 export async function getCache(key: string): Promise<any | null> {
   try {
+    const redis = getRedis();
     if (!redis) return null;
     const cached = await redis.get(key);
     return cached ? JSON.parse(String(cached)) : null;
@@ -12,6 +13,7 @@ export async function getCache(key: string): Promise<any | null> {
 
 export async function setCache(key: string, value: any, ttlSeconds: number = 30): Promise<void> {
   try {
+    const redis = getRedis();
     if (!redis) return;
     await redis.setEx(key, ttlSeconds, JSON.stringify(value));
   } catch {

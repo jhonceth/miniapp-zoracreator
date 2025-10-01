@@ -8,7 +8,10 @@ export const env = createEnv({
     REDIS_URL: z.string().min(1),
     REDIS_TOKEN: z.string().min(1),
     ETHERSCAN_API_KEY: z.string().min(1),
-    NEYNAR_API_KEY: z.string().min(1).optional().default("dev_neynar_key"),
+    NEYNAR_API_KEY: z.string().min(1),
+    THEGRAPH_API_KEY: z.string().optional().default(""),
+    ZORA_API_KEY: z.string().optional().default(""),
+    ZORA_GRAPHQL_ENDPOINT: z.string().min(1),
   },
   client: {
     NEXT_PUBLIC_URL: z.string().min(1),
@@ -20,7 +23,7 @@ export const env = createEnv({
     NEXT_PUBLIC_FARCASTER_PAYLOAD: z.string().min(1),
     NEXT_PUBLIC_FARCASTER_SIGNATURE: z.string().min(1),
     NEXT_PUBLIC_PLATFORM_REFERRER_ADDRESS: z.string().min(1),
-    NEXT_PUBLIC_ZBASE_ANALYTICS_URL: z.string().min(1).optional().default("https://analytics.zbase.fun"),
+    NEXT_PUBLIC_ZBASE_ANALYTICS_URL: z.string().min(1),
   },
   // For Next.js >= 13.4.4, you only need to destructure client variables:
   experimental__runtimeEnv: {

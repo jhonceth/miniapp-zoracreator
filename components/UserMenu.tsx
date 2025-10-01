@@ -98,26 +98,26 @@ export function UserMenu({ className = "" }: UserMenuProps) {
       {/* Avatar Trigger */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 p-2 rounded-full hover:bg-gray-100 transition-colors duration-200"
+        className="flex items-center gap-1 p-1 rounded-full hover:bg-gray-100 transition-colors duration-200"
       >
         <div className="relative">
           <Image
             src={avatarUrl}
             alt="Profile"
-            className="w-10 h-10 rounded-full border-2 border-purple-200 shadow-md"
-            width={40}
-            height={40}
+            className="w-8 h-8 rounded-full border-2 border-purple-200 shadow-md"
+            width={32}
+            height={32}
             onError={(e) => {
               // Fallback a icon.png si la imagen falla
               e.currentTarget.src = '/icon.png';
             }}
           />
-          <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
-            <CheckCircle className="w-2 h-2 text-white" />
+          <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
+            <CheckCircle className="w-1.5 h-1.5 text-white" />
           </div>
         </div>
         <ChevronDown 
-          className={`w-4 h-4 text-gray-600 transition-transform duration-200 ${
+          className={`w-3 h-3 text-gray-600 transition-transform duration-200 ${
             isOpen ? 'rotate-180' : ''
           }`} 
         />
