@@ -39,18 +39,26 @@ export function CreatorsList() {
         pageInfo: data.pageInfo,
       }
     },
-    initialPageSize: 5,
-    incrementSize: 5,
-    maxInfiniteScroll: 20,
+    initialPageSize: 10,
+    incrementSize: 10,
+    maxInfiniteScroll: Infinity,
     fullPageSize: 20,
     cacheKey: "creators",
   })
 
   if (isLoading && creators.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 gap-3">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        <p className="text-sm text-muted-foreground">Loading creators...</p>
+      <div className="flex flex-col items-center justify-center py-12 px-4">
+        <div className="relative">
+          <div className="w-12 h-12 border-4 border-accent-blue/20 border-t-accent-blue rounded-full animate-spin"></div>
+          <div className="absolute inset-0 w-12 h-12 border-4 border-transparent border-t-price-positive/30 rounded-full animate-spin animate-reverse"></div>
+        </div>
+        <div className="mt-4 flex items-center gap-2">
+          <div className="w-2 h-2 bg-accent-blue rounded-full animate-bounce"></div>
+          <div className="w-2 h-2 bg-accent-blue rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+          <div className="w-2 h-2 bg-accent-blue rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+        </div>
+        <p className="text-sm text-secondary mt-3 animate-pulse-glow">Loading creators...</p>
       </div>
     )
   }
@@ -77,13 +85,18 @@ export function CreatorsList() {
 
   return (
     <div className="space-y-4">
-      <div className="space-y-3 px-4">
+      <div className="space-y-2 px-4">
         {creators.map((creator, index) => {
           const isLastItem = index === creators.length - 1
           const rank = isInfiniteScrollMode ? index + 1 : (currentPage - 1) * 20 + index + 1
+          const isNewItem = index >= creators.length - 5 && isLoading
 
           return (
-            <div key={creator.address} ref={isLastItem && isInfiniteScrollMode ? observerRef : null}>
+            <div 
+              key={creator.address} 
+              ref={isLastItem && isInfiniteScrollMode ? observerRef : null}
+              className={isNewItem ? "animate-card-bounce" : ""}
+            >
               <CreatorCard creator={creator} rank={rank} />
             </div>
           )
@@ -91,8 +104,17 @@ export function CreatorsList() {
       </div>
 
       {isLoading && isInfiniteScrollMode && creators.length > 0 && (
-        <div className="flex items-center justify-center py-6">
-          <Loader2 className="w-6 h-6 animate-spin text-primary" />
+        <div className="flex flex-col items-center justify-center py-8 px-4">
+          <div className="relative">
+            <div className="w-12 h-12 border-4 border-accent-blue/20 border-t-accent-blue rounded-full animate-spin"></div>
+            <div className="absolute inset-0 w-12 h-12 border-4 border-transparent border-t-price-positive/30 rounded-full animate-spin animate-reverse"></div>
+          </div>
+          <div className="mt-4 flex items-center gap-2">
+            <div className="w-2 h-2 bg-accent-blue rounded-full animate-bounce"></div>
+            <div className="w-2 h-2 bg-accent-blue rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+            <div className="w-2 h-2 bg-accent-blue rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+          </div>
+          <p className="text-sm text-secondary mt-3 animate-pulse-glow">Loading more creators...</p>
         </div>
       )}
 

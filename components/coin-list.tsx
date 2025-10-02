@@ -49,18 +49,26 @@ export function CoinList({ type }: CoinListProps) {
         pageInfo: data.pageInfo,
       }
     },
-    initialPageSize: 5,
-    incrementSize: 5,
-    maxInfiniteScroll: 20,
+    initialPageSize: 10,
+    incrementSize: 10,
+    maxInfiniteScroll: Infinity,
     fullPageSize: 20,
     cacheKey: `coins-${type}`,
   })
 
   if (isLoading && coins.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 gap-3">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        <p className="text-sm text-muted-foreground">Loading coins...</p>
+      <div className="flex flex-col items-center justify-center py-12 px-4">
+        <div className="relative">
+          <div className="w-12 h-12 border-4 border-accent-blue/20 border-t-accent-blue rounded-full animate-spin"></div>
+          <div className="absolute inset-0 w-12 h-12 border-4 border-transparent border-t-price-positive/30 rounded-full animate-spin animate-reverse"></div>
+        </div>
+        <div className="mt-4 flex items-center gap-2">
+          <div className="w-2 h-2 bg-accent-blue rounded-full animate-bounce"></div>
+          <div className="w-2 h-2 bg-accent-blue rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+          <div className="w-2 h-2 bg-accent-blue rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+        </div>
+        <p className="text-sm text-secondary mt-3 animate-pulse-glow">Loading coins...</p>
       </div>
     )
   }
@@ -90,12 +98,17 @@ export function CoinList({ type }: CoinListProps) {
 
   return (
     <div className="space-y-4">
-      <div className="space-y-3 px-4">
+      <div className="space-y-2 px-4">
         {coins.map((coin, index) => {
           const isLastItem = index === coins.length - 1
           const rank = isInfiniteScrollMode ? index + 1 : (currentPage - 1) * 20 + index + 1
+          const isNewItem = index >= coins.length - 5 && isLoading
           return (
-            <div key={coin.address} ref={isLastItem && isInfiniteScrollMode ? observerRef : null}>
+            <div 
+              key={coin.address} 
+              ref={isLastItem && isInfiniteScrollMode ? observerRef : null}
+              className={isNewItem ? "animate-card-bounce" : ""}
+            >
               <CoinCard
                 coin={coin}
                 isFavorite={isFavorite(coin.address)}
@@ -108,8 +121,17 @@ export function CoinList({ type }: CoinListProps) {
       </div>
 
       {isLoading && isInfiniteScrollMode && coins.length > 0 && (
-        <div className="flex items-center justify-center py-6">
-          <Loader2 className="w-6 h-6 animate-spin text-primary" />
+        <div className="flex flex-col items-center justify-center py-8 px-4">
+          <div className="relative">
+            <div className="w-12 h-12 border-4 border-accent-blue/20 border-t-accent-blue rounded-full animate-spin"></div>
+            <div className="absolute inset-0 w-12 h-12 border-4 border-transparent border-t-price-positive/30 rounded-full animate-spin animate-reverse"></div>
+          </div>
+          <div className="mt-4 flex items-center gap-2">
+            <div className="w-2 h-2 bg-accent-blue rounded-full animate-bounce"></div>
+            <div className="w-2 h-2 bg-accent-blue rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+            <div className="w-2 h-2 bg-accent-blue rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+          </div>
+          <p className="text-sm text-secondary mt-3 animate-pulse-glow">Loading more coins...</p>
         </div>
       )}
 

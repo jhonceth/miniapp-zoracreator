@@ -1,10 +1,10 @@
 "use client"
 
 import type { ZoraCoin } from "@/lib/types/zora"
-import { TrendingUp, TrendingDown, Copy, Heart } from "lucide-react"
+import { TrendingUp, TrendingDown, Copy, Heart, DollarSign, Activity, Users } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 
 interface CoinCardProps {
@@ -16,7 +16,17 @@ interface CoinCardProps {
 
 export function CoinCard({ coin, isFavorite = false, onToggleFavorite, rank }: CoinCardProps) {
   const [copied, setCopied] = useState(false)
+  const [rotatingStatIndex, setRotatingStatIndex] = useState(0)
   const router = useRouter()
+
+  // Rotating stats effect
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setRotatingStatIndex((prev) => (prev + 1) % 3); // 0: Market Cap, 1: Volume 24h, 2: Holders
+    }, 3000); // Cambia cada 3 segundos
+
+    return () => clearInterval(interval);
+  }, []);
   const marketCap = Number.parseFloat(coin.marketCap)
   const volume24h = Number.parseFloat(coin.volume24h)
   const price = Number.parseFloat(coin.priceUsd)
@@ -65,10 +75,10 @@ export function CoinCard({ coin, isFavorite = false, onToggleFavorite, rank }: C
 
   return (
     <Card 
-      className="p-4 bg-card-dark border-card-dark hover:bg-card-dark/80 hover:scale-[1.02] hover:shadow-xl transition-all duration-300 cursor-pointer rounded-2xl shadow-lg hover:border-accent-blue/30"
+      className="px-4 py-1 bg-card-dark border-card-dark hover:bg-card-dark/80 hover:scale-[1.02] hover:shadow-xl transition-all duration-300 cursor-pointer rounded-2xl shadow-lg hover:border-accent-blue/30"
       onClick={handleCardClick}
     >
-      <div className="flex items-start gap-3">
+      <div className="flex items-center gap-3">
         {rank && (
           <div className="flex-shrink-0 w-8 h-8 rounded-full bg-accent-blue/20 flex items-center justify-center">
             <span className="text-sm font-bold text-accent-blue">#{rank}</span>
@@ -149,17 +159,32 @@ export function CoinCard({ coin, isFavorite = false, onToggleFavorite, rank }: C
               <p className="text-xs text-secondary">Price</p>
               <p className="text-sm font-semibold text-primary">{formatPrice(price)}</p>
             </div>
-            <div>
-              <p className="text-xs text-secondary">Market Cap</p>
-              <p className="text-sm font-semibold text-primary">{formatCurrency(marketCap)}</p>
-            </div>
-            <div>
-              <p className="text-xs text-secondary">Volume 24h</p>
-              <p className="text-sm font-semibold text-primary">{formatCurrency(volume24h)}</p>
-            </div>
-            <div>
-              <p className="text-xs text-secondary">Holders</p>
-              <p className="text-sm font-semibold text-primary">{coin.uniqueHolders.toLocaleString()}</p>
+            <div className="flex flex-col items-center">
+              <div className="flex items-center gap-1 text-xs text-secondary">
+                {rotatingStatIndex === 0 && (
+                  <>
+                    <DollarSign className="w-3 h-3" />
+                    Market Cap
+                  </>
+                )}
+                {rotatingStatIndex === 1 && (
+                  <>
+                    <Activity className="w-3 h-3" />
+                    Volume 24h
+                  </>
+                )}
+                {rotatingStatIndex === 2 && (
+                  <>
+                    <Users className="w-3 h-3" />
+                    Holders
+                  </>
+                )}
+              </div>
+              <p className="text-sm font-semibold text-primary text-center">
+                {rotatingStatIndex === 0 && formatCurrency(marketCap)}
+                {rotatingStatIndex === 1 && formatCurrency(volume24h)}
+                {rotatingStatIndex === 2 && coin.uniqueHolders.toLocaleString()}
+              </p>
             </div>
           </div>
         </div>

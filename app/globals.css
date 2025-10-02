@@ -89,6 +89,105 @@ body {
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
     background-color: rgba(59, 130, 246, 0.5);
   }
+
+  /* Animaciones para paginación */
+  @keyframes bounce-reverse {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  .animate-reverse {
+    animation-direction: reverse;
+  }
+
+  .animate-bounce-delay-1 {
+    animation-delay: 0.1s;
+  }
+
+  .animate-bounce-delay-2 {
+    animation-delay: 0.2s;
+  }
+
+  /* Efecto de rebote suave para las tarjetas */
+  @keyframes card-bounce {
+    0% {
+      transform: translateY(0) scale(1);
+    }
+    50% {
+      transform: translateY(-5px) scale(1.02);
+    }
+    100% {
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  .animate-card-bounce {
+    animation: card-bounce 0.6s ease-in-out;
+  }
+
+  /* Efecto de pulso para el indicador de carga */
+  @keyframes pulse-glow {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.7;
+      transform: scale(1.1);
+    }
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  /* Swipe transition effects */
+  @keyframes swipe-left {
+    0% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    50% {
+      transform: translateX(-20px);
+      opacity: 0.7;
+    }
+    100% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes swipe-right {
+    0% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    50% {
+      transform: translateX(20px);
+      opacity: 0.7;
+    }
+    100% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  .animate-swipe-left {
+    animation: swipe-left 0.3s ease-out;
+  }
+
+  .animate-swipe-right {
+    animation: swipe-right 0.3s ease-out;
+  }
+
+  /* Tab transition effect */
+  .tab-content-transition {
+    transition: all 0.3s ease-in-out;
+  }
 }
 
 @keyframes shimmer {

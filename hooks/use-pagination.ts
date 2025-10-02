@@ -119,11 +119,8 @@ export function usePagination<T>({
     setIsLoading(true)
 
     try {
-      const currentCount = allFetchedItems.length
-      const nextCount = Math.min(currentCount + incrementSize, maxInfiniteScroll)
-      const itemsToFetch = nextCount - currentCount
-
-      const result = await fetchFn(cursor, itemsToFetch)
+      // Always fetch incrementSize items, no limit
+      const result = await fetchFn(cursor, incrementSize)
       const newItems = [...allFetchedItems, ...result.items]
 
       setAllFetchedItems(newItems)
@@ -131,36 +128,19 @@ export function usePagination<T>({
       setCursor(result.pageInfo?.endCursor || undefined)
       setHasMore(result.pageInfo?.hasNextPage || false)
 
-      const shouldSwitchToPagination = newItems.length >= maxInfiniteScroll
-      if (shouldSwitchToPagination) {
-        setIsInfiniteScrollMode(false)
-        const estimatedTotal = result.pageInfo?.hasNextPage ? 100 : newItems.length
-        const pages = Math.ceil(estimatedTotal / fullPageSize)
-        setTotalPages(pages)
+      // Always stay in infinite scroll mode
+      setIsInfiniteScrollMode(true)
 
-        if (cacheKey) {
-          dataCache.set(cacheKey, {
-            items: newItems,
-            allFetchedItems: newItems,
-            cursor: result.pageInfo?.endCursor,
-            hasMore: result.pageInfo?.hasNextPage || false,
-            isInfiniteScrollMode: false,
-            currentPage: 1,
-            totalPages: pages,
-          })
-        }
-      } else {
-        if (cacheKey) {
-          dataCache.set(cacheKey, {
-            items: newItems,
-            allFetchedItems: newItems,
-            cursor: result.pageInfo?.endCursor,
-            hasMore: result.pageInfo?.hasNextPage || false,
-            isInfiniteScrollMode: true,
-            currentPage: 1,
-            totalPages: 1,
-          })
-        }
+      if (cacheKey) {
+        dataCache.set(cacheKey, {
+          items: newItems,
+          allFetchedItems: newItems,
+          cursor: result.pageInfo?.endCursor,
+          hasMore: result.pageInfo?.hasNextPage || false,
+          isInfiniteScrollMode: true,
+          currentPage: 1,
+          totalPages: 1,
+        })
       }
     } catch (err) {
       setError(err instanceof Error ? err : new Error("Failed to load more data"))
@@ -168,7 +148,7 @@ export function usePagination<T>({
       setIsLoading(false)
       loadingRef.current = false
     }
-  }, [cursor, hasMore, allFetchedItems, fetchFn, incrementSize, maxInfiniteScroll, fullPageSize, cacheKey])
+  }, [cursor, hasMore, allFetchedItems, fetchFn, incrementSize, cacheKey])
 
   const goToPage = useCallback(
     async (page: number) => {

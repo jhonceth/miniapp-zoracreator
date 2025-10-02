@@ -40,6 +40,8 @@ import {
   ArrowUp,
   ArrowDown,
   Circle,
+  TrendingDown as VolumeIcon,
+  UserCheck as HoldersIcon,
 } from "lucide-react";
 import { UpdateURIModal } from "@/components/UpdateURIModal";
 import { UpdatePayoutRecipientModal } from "@/components/UpdatePayoutRecipientModal";
@@ -77,6 +79,16 @@ export function TokenProfile({ address }: TokenProfileProps) {
   const [rawApiResponse, setRawApiResponse] = useState<any>(null);
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [showFullBio, setShowFullBio] = useState(false);
+  const [rotatingStatIndex, setRotatingStatIndex] = useState(0);
+
+  // Rotating stats effect
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setRotatingStatIndex((prev) => (prev + 1) % 3); // 0: Market Cap, 1: Volume 24h, 2: Holders
+    }, 3000); // Cambia cada 3 segundos
+
+    return () => clearInterval(interval);
+  }, []);
 
   // Lazy loading para el perfil del creador
   const { profile: creatorProfile, isLoading: isLoadingCreator, error: creatorError, loadProfile: loadCreatorProfile } = useCreatorProfileLazy(coin?.creatorAddress || '', activeTab === 'creator');
@@ -501,17 +513,51 @@ export function TokenProfile({ address }: TokenProfileProps) {
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-sm text-secondary">Market Cap</div>
-            <div className="text-lg font-semibold text-primary">
-              {coin.marketCap ? 
-                (() => {
-                  const cap = parseFloat(coin.marketCap) || 0
-                  if (cap >= 1e9) return `$${(cap / 1e9).toFixed(1)}B`
-                  else if (cap >= 1e6) return `$${(cap / 1e6).toFixed(1)}M`
-                  else if (cap >= 1e3) return `$${(cap / 1e3).toFixed(1)}K`
-                  else return `$${cap.toFixed(2)}`
-                })() : "N/A"}
-            </div>
+                <div className="flex items-center justify-end gap-1 text-sm text-secondary">
+                  {rotatingStatIndex === 0 && (
+                    <>
+                      <DollarSign className="w-3 h-3" />
+                      Market Cap
+                    </>
+                  )}
+                  {rotatingStatIndex === 1 && (
+                    <>
+                      <VolumeIcon className="w-3 h-3" />
+                      Volume 24h
+                    </>
+                  )}
+                  {rotatingStatIndex === 2 && (
+                    <>
+                      <HoldersIcon className="w-3 h-3" />
+                      Holders
+                    </>
+                  )}
+                </div>
+                <div className="text-lg font-semibold text-primary">
+                  {rotatingStatIndex === 0 && (
+                    coin.marketCap ? 
+                      (() => {
+                        const cap = parseFloat(coin.marketCap) || 0
+                        if (cap >= 1e9) return `$${(cap / 1e9).toFixed(1)}B`
+                        else if (cap >= 1e6) return `$${(cap / 1e6).toFixed(1)}M`
+                        else if (cap >= 1e3) return `$${(cap / 1e3).toFixed(1)}K`
+                        else return `$${cap.toFixed(2)}`
+                      })() : "N/A"
+                  )}
+                  {rotatingStatIndex === 1 && (
+                    coin.volume24h ? 
+                      (() => {
+                        const vol = parseFloat(coin.volume24h) || 0
+                        if (vol >= 1e9) return `$${(vol / 1e9).toFixed(1)}B`
+                        else if (vol >= 1e6) return `$${(vol / 1e6).toFixed(1)}M`
+                        else if (vol >= 1e3) return `$${(vol / 1e3).toFixed(1)}K`
+                        else return `$${vol.toFixed(2)}`
+                      })() : "N/A"
+                  )}
+                  {rotatingStatIndex === 2 && (
+                    coin.uniqueHolders ? coin.uniqueHolders.toLocaleString() : "N/A"
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -579,20 +625,6 @@ export function TokenProfile({ address }: TokenProfileProps) {
                 {/* Estadísticas básicas */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="text-center">
-                    <div className="text-xs text-secondary mb-1">Volume 24h</div>
-                    <div className="text-lg font-semibold text-primary">
-                      {coin.volume24h ? 
-                        (() => {
-                          const vol = parseFloat(coin.volume24h) || 0
-                          if (vol >= 1e9) return `$${(vol / 1e9).toFixed(1)}B`
-                          else if (vol >= 1e6) return `$${(vol / 1e6).toFixed(1)}M`
-                          else if (vol >= 1e3) return `$${(vol / 1e3).toFixed(1)}K`
-                          else return `$${vol.toFixed(2)}`
-                        })() : "N/A"}
-                    </div>
-                  </div>
-                  
-                  <div className="text-center">
                     <div className="text-xs text-secondary mb-1">Total Supply</div>
                     <div className="text-lg font-semibold text-primary">
                       {coin.totalSupply ? 
@@ -607,13 +639,6 @@ export function TokenProfile({ address }: TokenProfileProps) {
                   </div>
                   
                   <div className="text-center">
-                    <div className="text-xs text-secondary mb-1">Holders</div>
-                    <div className="text-lg font-semibold text-primary">
-                      {coin.uniqueHolders || "N/A"}
-                    </div>
-                  </div>
-                  
-                  <div className="text-center">
                     <div className="text-xs text-secondary mb-1">Created</div>
                     <div className="text-lg font-semibold text-primary">
               {coin.createdAt ? 
@@ -622,8 +647,8 @@ export function TokenProfile({ address }: TokenProfileProps) {
                           day: "numeric"
                 }) : "N/A"}
             </div>
-          </div>
-        </div>
+                  </div>
+                </div>
 
                 {/* Gráficos de precios */}
                 <div className="mt-6 mb-8">

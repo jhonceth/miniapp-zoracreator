@@ -9,8 +9,17 @@ export function FavoritesList() {
 
   if (!isLoaded) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="flex flex-col items-center justify-center py-12 px-4">
+        <div className="relative">
+          <div className="w-12 h-12 border-4 border-accent-blue/20 border-t-accent-blue rounded-full animate-spin"></div>
+          <div className="absolute inset-0 w-12 h-12 border-4 border-transparent border-t-price-positive/30 rounded-full animate-spin animate-reverse"></div>
+        </div>
+        <div className="mt-4 flex items-center gap-2">
+          <div className="w-2 h-2 bg-accent-blue rounded-full animate-bounce"></div>
+          <div className="w-2 h-2 bg-accent-blue rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+          <div className="w-2 h-2 bg-accent-blue rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+        </div>
+        <p className="text-sm text-secondary mt-3 animate-pulse-glow">Loading favorites...</p>
       </div>
     )
   }
@@ -30,7 +39,7 @@ export function FavoritesList() {
   }
 
   return (
-    <div className="space-y-3 px-4 pb-4">
+    <div className="space-y-2 px-4 pb-4">
       {favorites.map((coin) => (
         <CoinCard
           key={coin.address}
