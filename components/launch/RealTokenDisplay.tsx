@@ -101,8 +101,8 @@ export function RealTokenDisplay({ token, onCreateAnother }: RealTokenDisplayPro
                     className="w-16 h-16 rounded-xl object-cover border-2 border-white/20 shadow-lg"
                   />
                 ) : (
-                  <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center border-2 border-white/20 shadow-lg">
-                    <span className="text-white text-xl font-bold">{token.symbol.charAt(0)}</span>
+                  <div className="w-16 h-16 bg-card-dark rounded-xl flex items-center justify-center border-2 border-card-dark shadow-lg">
+                    <span className="text-primary text-xl font-bold">{token.symbol.charAt(0)}</span>
                   </div>
                 )}
               </div>
@@ -113,7 +113,7 @@ export function RealTokenDisplay({ token, onCreateAnother }: RealTokenDisplayPro
                   <Badge className="bg-orange-500/20 text-orange-100 border-orange-500/30">
                     Testnet
                   </Badge>
-                  <Badge className="bg-green-500/20 text-green-100 border-green-500/30">
+                  <Badge className="bg-price-positive/20 text-price-positive border-price-positive/30">
                     LIVE
                   </Badge>
                 </div>
@@ -240,19 +240,19 @@ export function RealTokenDisplay({ token, onCreateAnother }: RealTokenDisplayPro
                     className="w-20 h-20 rounded-xl object-cover border-4 border-white/20 shadow-lg"
                   />
                 ) : (
-                  <div className="w-20 h-20 bg-white/20 rounded-xl flex items-center justify-center border-4 border-white/20 shadow-lg">
-                    <span className="text-white text-2xl font-bold">{token.symbol.charAt(0)}</span>
+                  <div className="w-20 h-20 bg-card-dark rounded-xl flex items-center justify-center border-4 border-card-dark shadow-lg">
+                    <span className="text-primary text-2xl font-bold">{token.symbol.charAt(0)}</span>
                   </div>
                 )}
               </div>
               <div>
                 <h1 className="text-3xl font-bold">{token.name}</h1>
-                <p className="text-xl text-white/80 font-medium">{token.symbol}</p>
+                <p className="text-xl text-secondary font-medium">{token.symbol}</p>
                 <div className="flex items-center gap-2 mt-2">
-                  <Badge className="bg-white/20 text-white border-white/30">
+                  <Badge className="bg-card-dark text-primary border-card-dark">
                     {isMainnet ? "Production" : "Testnet"}
                   </Badge>
-                  <Badge className="bg-green-500/20 text-green-100 border-green-500/30">
+                  <Badge className="bg-price-positive/20 text-price-positive border-price-positive/30">
                     LIVE
                   </Badge>
                 </div>

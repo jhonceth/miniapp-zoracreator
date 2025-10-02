@@ -1,5 +1,5 @@
 import type { MiniAppNotificationDetails } from "@farcaster/miniapp-sdk";
-import { redis } from "./redis";
+import { getRedis } from "./redis";
 
 const notificationServiceKey = "farcaster:miniapp";
 
@@ -10,6 +10,7 @@ function getUserNotificationDetailsKey(fid: number): string {
 export async function getUserNotificationDetails(
   fid: number
 ): Promise<MiniAppNotificationDetails | null> {
+  const redis = getRedis();
   if (!redis) {
     return null;
   }
@@ -31,6 +32,7 @@ export async function setUserNotificationDetails(
   fid: number,
   notificationDetails: MiniAppNotificationDetails
 ): Promise<void> {
+  const redis = getRedis();
   if (!redis) {
     return;
   }
@@ -41,6 +43,7 @@ export async function setUserNotificationDetails(
 export async function deleteUserNotificationDetails(
   fid: number
 ): Promise<void> {
+  const redis = getRedis();
   if (!redis) {
     return;
   }

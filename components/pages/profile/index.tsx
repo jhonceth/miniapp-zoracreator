@@ -49,7 +49,7 @@ export default function ProfilePage() {
 
   const formatDate = (dateString: string | undefined) => {
     if (!dateString) return "N/A";
-    return new Date(dateString).toLocaleDateString("es-ES", {
+    return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
@@ -74,16 +74,16 @@ export default function ProfilePage() {
 
   if (!isConnected) {
     return (
-      <div className="bg-white text-black min-h-screen p-4">
+      <div className="bg-gradient-to-br from-[#0A0F1C] to-[#101A2D] text-primary min-h-screen p-4">
         <div className="max-w-4xl mx-auto text-center py-12">
-          <Wallet className="w-16 h-16 text-blue-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold mb-2">Wallet no conectada</h2>
-          <p className="text-gray-600 mb-6">
-            Por favor, conecta tu wallet para ver tu perfil y tokens creados.
+          <Wallet className="w-16 h-16 text-accent-blue mx-auto mb-4" />
+          <h2 className="text-2xl font-bold mb-2 text-primary">Wallet not connected</h2>
+          <p className="text-secondary mb-6">
+            Please connect your wallet to view your profile and created tokens.
           </p>
           <Link href="/">
-            <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700">
-              Volver al Inicio
+            <Button className="bg-gradient-to-r from-accent-blue to-accent-blue/80 hover:from-accent-blue/90 hover:to-accent-blue/70 text-primary">
+              Back to Home
             </Button>
           </Link>
         </div>
@@ -92,22 +92,22 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="bg-white text-black min-h-screen pb-20">
+    <div className="bg-gradient-to-br from-[#0A0F1C] to-[#101A2D] text-primary min-h-screen pb-20">
       {/* Top Navigation Bar */}
       <div className="max-w-4xl mx-auto mb-4 sm:mb-6">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2 sm:gap-4">
             <Link href="/">
-              <Button variant="outline" size="sm" className="h-8 px-2 sm:px-3">
+              <Button variant="outline" size="sm" className="h-8 px-2 sm:px-3 border-card-dark bg-card-dark text-primary hover:bg-card-dark/80">
                 <ArrowLeft className="w-4 h-4 mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">Back</span>
               </Button>
             </Link>
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
-                <Zap className="w-3 h-3 sm:w-5 sm:h-5 text-white" />
+              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-accent-blue to-accent-blue/80 rounded-lg flex items-center justify-center">
+                <Zap className="w-3 h-3 sm:w-5 sm:h-5 text-primary" />
               </div>
-              <span className="text-lg sm:text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+              <span className="text-lg sm:text-xl font-bold text-primary">
                 My Profile
               </span>
             </div>
@@ -124,11 +124,11 @@ export default function ProfilePage() {
 
         {/* Loading State */}
         {isLoading && (
-          <Card>
+          <Card className="bg-card-dark border-card-dark">
             <CardContent className="py-6 sm:py-8">
               <div className="text-center">
-                <RefreshCw className="w-6 h-6 sm:w-8 sm:h-8 text-purple-600 mx-auto mb-3 sm:mb-4 animate-spin" />
-                <p className="text-sm sm:text-base text-gray-600">Cargando tokens...</p>
+                <RefreshCw className="w-6 h-6 sm:w-8 sm:h-8 text-accent-blue mx-auto mb-3 sm:mb-4 animate-spin" />
+                <p className="text-sm sm:text-base text-secondary">Loading tokens...</p>
               </div>
             </CardContent>
           </Card>
@@ -136,13 +136,13 @@ export default function ProfilePage() {
 
         {/* Error State */}
         {error && (
-          <Card className="border-red-200 bg-red-50">
+          <Card className="border-price-negative/20 bg-price-negative/10">
             <CardContent className="py-6 sm:py-8">
               <div className="text-center">
-                <p className="text-sm sm:text-base text-red-600 mb-4">Error cargando tokens: {error}</p>
-                <Button onClick={refetch} variant="outline" className="border-red-200 text-red-600 hover:bg-red-50 h-8 sm:h-10">
+                <p className="text-sm sm:text-base text-price-negative mb-4">Error loading tokens: {error}</p>
+                <Button onClick={refetch} variant="outline" className="border-price-negative/20 text-price-negative hover:bg-price-negative/5 h-8 sm:h-10">
                   <RefreshCw className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
-                  <span className="text-xs sm:text-sm">Reintentar</span>
+                  <span className="text-xs sm:text-sm">Retry</span>
                 </Button>
               </div>
             </CardContent>
@@ -151,16 +151,16 @@ export default function ProfilePage() {
 
         {/* No Tokens State */}
         {!isLoading && !error && coinsCount === 0 && (
-          <Card>
+          <Card className="bg-card-dark border-card-dark">
             <CardContent className="py-8 sm:py-12">
               <div className="text-center">
-                <Zap className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-3 sm:mb-4" />
-                <h3 className="text-lg sm:text-xl font-semibold text-gray-600 mb-2">No has creado ningún token</h3>
-                <p className="text-sm sm:text-base text-gray-500 mb-4 sm:mb-6">Parece que aún no has creado ningún token Zora. ¡Es hora de empezar!</p>
+                <Zap className="w-12 h-12 sm:w-16 sm:h-16 text-secondary mx-auto mb-3 sm:mb-4" />
+                <h3 className="text-lg sm:text-xl font-semibold text-primary mb-2">You haven&apos;t created any tokens</h3>
+                <p className="text-sm sm:text-base text-secondary mb-4 sm:mb-6">It looks like you haven&apos;t created any Zora tokens yet. Time to get started!</p>
                 <Link href="/launch">
-                  <Button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 h-8 sm:h-10">
+                  <Button className="bg-gradient-to-r from-accent-blue to-accent-blue/80 hover:from-accent-blue/90 hover:to-accent-blue/70 text-primary h-8 sm:h-10">
                     <Zap className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
-                    <span className="text-xs sm:text-sm">Crear mi primer token</span>
+                    <span className="text-xs sm:text-sm">Create my first token</span>
                   </Button>
                 </Link>
               </div>
@@ -172,15 +172,15 @@ export default function ProfilePage() {
         {!isLoading && !error && coinsCount > 0 && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Tokens Creados</h2>
-              <Badge className="bg-purple-100 text-purple-800 border-purple-200 text-xs">
+              <h2 className="text-lg sm:text-xl font-semibold text-primary">Created Tokens</h2>
+              <Badge className="bg-accent-blue/20 text-accent-blue border-accent-blue/30 text-xs">
                 {coinsCount} token{coinsCount !== 1 ? 's' : ''}
               </Badge>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               {createdCoins.map((coin, index) => {
-                console.log(`🔍 Token ${index + 1} (${coin.name || 'Sin nombre'}):`, {
+                console.log(`🔍 Token ${index + 1} (${coin.name || 'Unnamed'}):`, {
                   hasMediaContent: !!coin.mediaContent,
                   hasPreviewImage: !!coin.mediaContent?.previewImage,
                   hasMedium: !!coin.mediaContent?.previewImage?.medium,
@@ -193,7 +193,7 @@ export default function ProfilePage() {
 
                 return (
                   <Link key={coin.id || index} href={`/token/${coin.address}?from=/profile`}>
-                    <Card className="hover:shadow-lg transition-shadow duration-200 cursor-pointer hover:scale-[1.01] sm:hover:scale-[1.02] transition-transform">
+                    <Card className="bg-card-dark border-card-dark hover:shadow-lg transition-shadow duration-200 cursor-pointer hover:scale-[1.01] sm:hover:scale-[1.02] transition-transform hover:bg-card-dark/80 hover:border-accent-blue/30">
                     <CardHeader className="pb-2 sm:pb-3 p-3 sm:p-6">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
@@ -203,7 +203,7 @@ export default function ProfilePage() {
                               <Image
                                 src={coin.mediaContent.previewImage.medium}
                                 alt={coin.name || "Token"}
-                                className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg border border-gray-200 object-cover"
+                                className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg border border-card-dark object-cover"
                                 width={48}
                                 height={48}
                               />
@@ -211,23 +211,23 @@ export default function ProfilePage() {
                               <Image
                                 src={coin.mediaContent.previewImage.small}
                                 alt={coin.name || "Token"}
-                                className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg border border-gray-200 object-cover"
+                                className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg border border-card-dark object-cover"
                                 width={48}
                                 height={48}
                               />
                             ) : (
-                              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg border border-gray-200 bg-gradient-to-r from-purple-400 to-blue-400 flex items-center justify-center">
-                                  <ImageIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg border border-card-dark bg-gradient-to-r from-accent-blue/60 to-accent-blue/40 flex items-center justify-center">
+                                  <ImageIcon className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                               </div>
                             )}
                           </div>
 
                           {/* Token Info */}
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-gray-900 text-sm sm:text-base truncate">
-                              {coin.name || "Sin nombre"}
+                            <h3 className="font-semibold text-primary text-sm sm:text-base truncate">
+                              {coin.name || "Unnamed"}
                             </h3>
-                            <p className="text-xs sm:text-sm text-gray-600">${coin.symbol || "N/A"}</p>
+                            <p className="text-xs sm:text-sm text-secondary">${coin.symbol || "N/A"}</p>
                           </div>
                         </div>
 
@@ -240,10 +240,10 @@ export default function ProfilePage() {
                               e.stopPropagation();
                               copyToClipboard(coin.address || "", `token-${index}`);
                             }}
-                            className="h-7 w-7 sm:h-8 sm:w-8 p-0"
+                            className="h-7 w-7 sm:h-8 sm:w-8 p-0 border-card-dark bg-white/90 hover:bg-white"
                           >
                             {copiedField === `token-${index}` ? (
-                              <CheckCircle className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-green-600" />
+                              <CheckCircle className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-price-positive" />
                             ) : (
                               <Copy className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                             )}
@@ -255,7 +255,7 @@ export default function ProfilePage() {
                               e.stopPropagation();
                               openInExplorer(coin.address || "");
                             }}
-                            className="h-7 w-7 sm:h-8 sm:w-8 p-0"
+                            className="h-7 w-7 sm:h-8 sm:w-8 p-0 border-card-dark bg-white/90 hover:bg-white"
                           >
                             <ExternalLink className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                           </Button>
@@ -263,21 +263,21 @@ export default function ProfilePage() {
                       </div>
                     </CardHeader>
                     <CardContent className="pt-0 p-3 sm:p-6 grid grid-cols-2 gap-2 text-xs sm:text-sm">
-                      <div className="flex items-center gap-1 text-gray-700">
-                        <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" />
-                        <span>Cap. Mercado: {formatNumber(coin.marketCap)}</span>
+                      <div className="flex items-center gap-1 text-primary">
+                        <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 text-price-positive" />
+                        <span>Market Cap: {formatNumber(coin.marketCap)}</span>
                       </div>
-                      <div className="flex items-center gap-1 text-gray-700">
-                        <Users className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600" />
+                      <div className="flex items-center gap-1 text-primary">
+                        <Users className="w-3 h-3 sm:w-4 sm:h-4 text-accent-blue" />
                         <span>Holders: {formatNumber(coin.uniqueHolders)}</span>
                       </div>
-                      <div className="flex items-center gap-1 text-gray-700">
-                        <Activity className="w-3 h-3 sm:w-4 sm:h-4 text-orange-600" />
-                        <span>Volumen 24h: {formatNumber(coin.volume24h)}</span>
+                      <div className="flex items-center gap-1 text-primary">
+                        <Activity className="w-3 h-3 sm:w-4 sm:h-4 text-accent-blue" />
+                        <span>Volume 24h: {formatNumber(coin.volume24h)}</span>
                       </div>
-                      <div className="flex items-center gap-1 text-gray-700">
-                        <Calendar className="w-3 h-3 sm:w-4 sm:h-4 text-purple-600" />
-                        <span>Creado: {formatDate(coin.createdAt)}</span>
+                      <div className="flex items-center gap-1 text-primary">
+                        <Calendar className="w-3 h-3 sm:w-4 sm:h-4 text-accent-blue" />
+                        <span>Created: {formatDate(coin.createdAt)}</span>
                       </div>
                     </CardContent>
                   </Card>

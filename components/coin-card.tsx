@@ -65,13 +65,13 @@ export function CoinCard({ coin, isFavorite = false, onToggleFavorite, rank }: C
 
   return (
     <Card 
-      className="p-4 hover:bg-accent/50 transition-colors cursor-pointer"
+      className="p-4 bg-card-dark border-card-dark hover:bg-card-dark/80 hover:scale-[1.02] hover:shadow-xl transition-all duration-300 cursor-pointer rounded-2xl shadow-lg hover:border-accent-blue/30"
       onClick={handleCardClick}
     >
       <div className="flex items-start gap-3">
         {rank && (
-          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-            <span className="text-sm font-bold text-primary">#{rank}</span>
+          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-accent-blue/20 flex items-center justify-center">
+            <span className="text-sm font-bold text-accent-blue">#{rank}</span>
           </div>
         )}
 
@@ -86,8 +86,8 @@ export function CoinCard({ coin, isFavorite = false, onToggleFavorite, rank }: C
               }}
             />
           ) : (
-            <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-              <span className="text-xl font-bold text-primary">{coin.symbol.charAt(0)}</span>
+            <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-accent-blue/20 to-accent-blue/5 flex items-center justify-center">
+              <span className="text-xl font-bold text-accent-blue">{coin.symbol.charAt(0)}</span>
             </div>
           )}
 
@@ -102,7 +102,7 @@ export function CoinCard({ coin, isFavorite = false, onToggleFavorite, rank }: C
               }}
               title="Copy contract"
             >
-              <Copy className={`w-4 h-4 ${copied ? "text-green-500" : ""}`} />
+              <Copy className={`w-4 h-4 ${copied ? "text-price-positive" : "text-secondary"}`} />
             </Button>
             <Button
               variant="ghost"
@@ -114,7 +114,7 @@ export function CoinCard({ coin, isFavorite = false, onToggleFavorite, rank }: C
               }}
               title={isFavorite ? "Remove from favorites" : "Add to favorites"}
             >
-              <Heart className={`w-4 h-4 ${isFavorite ? "fill-red-500 text-red-500" : ""}`} />
+              <Heart className={`w-4 h-4 ${isFavorite ? "fill-price-negative text-price-negative" : "text-secondary"}`} />
             </Button>
           </div>
         </div>
@@ -123,16 +123,16 @@ export function CoinCard({ coin, isFavorite = false, onToggleFavorite, rank }: C
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2 mb-1">
             <div className="min-w-0">
-              <h3 className="font-semibold text-foreground truncate">{coin.name}</h3>
-              <p className="text-sm text-muted-foreground">{coin.symbol}</p>
+              <h3 className="font-semibold text-primary truncate">{coin.name}</h3>
+              <p className="text-sm text-secondary">{coin.symbol}</p>
             </div>
 
             {changePercent !== null && (
               <div
                 className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium ${
                   isPositive
-                    ? "bg-green-500/10 text-green-600 dark:text-green-400"
-                    : "bg-red-500/10 text-red-600 dark:text-red-400"
+                    ? "bg-price-positive/10 text-price-positive"
+                    : "bg-price-negative/10 text-price-negative"
                 }`}
               >
                 {isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
@@ -146,20 +146,20 @@ export function CoinCard({ coin, isFavorite = false, onToggleFavorite, rank }: C
 
           <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-3">
             <div>
-              <p className="text-xs text-muted-foreground">Price</p>
-              <p className="text-sm font-semibold text-foreground">{formatPrice(price)}</p>
+              <p className="text-xs text-secondary">Price</p>
+              <p className="text-sm font-semibold text-primary">{formatPrice(price)}</p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Market Cap</p>
-              <p className="text-sm font-semibold text-foreground">{formatCurrency(marketCap)}</p>
+              <p className="text-xs text-secondary">Market Cap</p>
+              <p className="text-sm font-semibold text-primary">{formatCurrency(marketCap)}</p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Volume 24h</p>
-              <p className="text-sm font-semibold text-foreground">{formatCurrency(volume24h)}</p>
+              <p className="text-xs text-secondary">Volume 24h</p>
+              <p className="text-sm font-semibold text-primary">{formatCurrency(volume24h)}</p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Holders</p>
-              <p className="text-sm font-semibold text-foreground">{coin.uniqueHolders.toLocaleString()}</p>
+              <p className="text-xs text-secondary">Holders</p>
+              <p className="text-sm font-semibold text-primary">{coin.uniqueHolders.toLocaleString()}</p>
             </div>
           </div>
         </div>

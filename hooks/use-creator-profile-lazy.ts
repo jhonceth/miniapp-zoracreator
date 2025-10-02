@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getProfile } from "@zoralabs/coins-sdk";
+import { getProfile, getProfileCoins } from "@zoralabs/coins-sdk";
 
 interface CreatorProfile {
   id?: string;
@@ -46,6 +46,96 @@ interface CreatorProfile {
     address?: string;
     marketCap?: string;
     marketCapDelta24h?: string;
+    totalVolume?: string;
+    volume24h?: string;
+  };
+  createdCoins?: {
+    count: number;
+    edges: Array<{
+      node: {
+        id: string;
+        name: string;
+        description: string;
+        address: string;
+        symbol: string;
+        totalSupply: string;
+        totalVolume: string;
+        volume24h: string;
+        createdAt?: string;
+        creatorAddress?: string;
+        poolCurrencyToken?: {
+          address?: string;
+          name?: string;
+          decimals?: number;
+        };
+        tokenPrice?: {
+          priceInUsdc?: string;
+          currencyAddress: string;
+          priceInPoolToken: string;
+        };
+        marketCap: string;
+        marketCapDelta24h: string;
+        chainId: number;
+        tokenUri?: string;
+        platformReferrerAddress?: string;
+        payoutRecipientAddress?: string;
+        creatorProfile?: {
+          id: string;
+          handle: string;
+          avatar?: {
+            previewImage: {
+              blurhash?: string;
+              medium: string;
+              small: string;
+            };
+          };
+          socialAccounts: {
+            instagram?: {
+              username?: string;
+              displayName?: string;
+              id?: string;
+            };
+            tiktok?: {
+              username?: string;
+              displayName?: string;
+              id?: string;
+            };
+            twitter?: {
+              username?: string;
+              displayName?: string;
+              id?: string;
+            };
+            farcaster?: {
+              username?: string;
+              displayName?: string;
+              id?: string;
+            };
+          };
+        };
+        mediaContent?: {
+          mimeType?: string;
+          originalUri?: string;
+          previewImage?: {
+            small?: string;
+            medium?: string;
+            blurhash?: string;
+          };
+        };
+        uniswapV4PoolKey?: {
+          token0Address?: string;
+          token1Address?: string;
+          fee?: number;
+          tickSpacing?: number;
+          hookAddress?: string;
+        };
+        uniswapV3PoolAddress?: string;
+        uniqueHolders?: number;
+      };
+    }>;
+    pageInfo?: {
+      hasNextPage?: boolean;
+      endCursor?: string;
+    };
   };
 }
 
@@ -86,14 +176,30 @@ export function useCreatorProfileLazy(creatorAddress: string, shouldLoad: boolea
 
     try {
       console.log('🔍 Loading creator profile for:', creatorAddress);
+      console.log('🔍 Creator address type:', typeof creatorAddress);
+      console.log('🔍 Creator address length:', creatorAddress.length);
       
-      // Usar la API real de Zora
-      const response = await getProfile({
-        identifier: creatorAddress,
-      });
+      // Usar ambas APIs de Zora para obtener datos completos
+      const [profileResponse, coinsResponse] = await Promise.all([
+        getProfile({
+          identifier: creatorAddress,
+        }),
+        getProfileCoins({
+          identifier: creatorAddress,
+          count: 50, // Obtener más tokens por página
+          chainIds: [8453], // Solo Base Mainnet por ahora
+        })
+      ]);
       
-      // TODO: fix profile graphql types
-      const profileData: CreatorProfile | undefined = response?.data?.profile;
+      // Combinar datos de ambas APIs
+      const profileData: CreatorProfile | undefined = profileResponse?.data?.profile;
+      const createdCoinsData = coinsResponse?.data?.profile?.createdCoins;
+      
+      // Debug: Log the full response to see what fields are available
+      console.log('🔍 Profile API Response:', JSON.stringify(profileResponse, null, 2));
+      console.log('🔍 Coins API Response:', JSON.stringify(coinsResponse, null, 2));
+      console.log('🔍 Profile Data:', JSON.stringify(profileData, null, 2));
+      console.log('🔍 Created Coins Data:', JSON.stringify(createdCoinsData, null, 2));
       
       if (profileData) {
         console.log("Profile Details:");
@@ -120,11 +226,29 @@ export function useCreatorProfileLazy(creatorAddress: string, shouldLoad: boolea
           console.log("- Address:", profileData.creatorCoin.address);
           console.log("- Market Cap:", profileData.creatorCoin.marketCap);
           console.log("- 24h Market Cap Change:", profileData.creatorCoin.marketCapDelta24h);
+          console.log("- Total Volume:", (profileData.creatorCoin as any)?.totalVolume);
+          console.log("- Volume 24h:", (profileData.creatorCoin as any)?.volume24h);
+          console.log("- Full Creator Coin Object:", JSON.stringify(profileData.creatorCoin, null, 2));
+        } else {
+          console.log("❌ No Creator Coin found in profile data");
+        }
+        
+        // Combinar datos del perfil con los tokens creados
+        const combinedProfile = {
+          ...profileData,
+          createdCoins: createdCoinsData
+        };
+        
+        console.log("Combined Profile with Created Coins:");
+        console.log("- Created Coins Count:", createdCoinsData?.count || 0);
+        console.log("- Created Coins Edges Length:", createdCoinsData?.edges?.length || 0);
+        if (createdCoinsData?.edges && createdCoinsData.edges.length > 0) {
+          console.log("- First Coin:", JSON.stringify(createdCoinsData.edges[0], null, 2));
         }
 
         // Guardar en caché
-        profileCache.set(creatorAddress, profileData);
-        setProfile(profileData);
+        profileCache.set(creatorAddress, combinedProfile);
+        setProfile(combinedProfile);
       } else {
         console.log("Profile not found or user has not set up a profile");
         setError("Profile not found");

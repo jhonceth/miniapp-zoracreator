@@ -6,7 +6,7 @@ import { env } from "@/lib/env";
  * @returns The farcaster manifest for the frame
  */
 export async function getFarcasterManifest() {
-  let frameName = "Create ZoraCoin";
+  let frameName = "ZCreate";
   let noindex = false;
   const appUrl = env.NEXT_PUBLIC_URL;
   
@@ -37,12 +37,12 @@ export async function getFarcasterManifest() {
       iconUrl: `${appUrl}/images/icon.png`,
       homeUrl: appUrl,
       imageUrl: `${appUrl}/images/feed.png`,
-      buttonTitle: `Launch You ZoraCoin`,
+      buttonTitle: `Launch ZCreate`,
       splashImageUrl: `${appUrl}/images/splash.png`,
       splashBackgroundColor: "#855DCD",
       webhookUrl: `${appUrl}/api/webhook`,
       // Metadata https://github.com/farcasterxyz/miniapps/discussions/191
-      subtitle: "Launch your coin on Zora", // 30 characters, no emojis or special characters, short description under app name
+      subtitle: "Launch or view your coin on Zora", // 30 characters, no emojis or special characters, short description under app name
       description: "Empowering creators: Use our mini-app to create and launch your own coin on Zora directly from Farcaster.", // 170 characters, no emojis or special characters, promotional message displayed on Mini App Page
       primaryCategory: "finance",
       tags: ["nft-zora", "zora", "zora-coin", "zora-protocol", "token"], // up to 5 tags, filtering/search tags

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "🔧 Configurando variables de entorno para Zora Token Creator"
+echo "🔧 Configurando variables de entorno para ZCreate"
 echo ""
 
 # Crear archivo .env.local si no existe

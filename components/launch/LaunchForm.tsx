@@ -323,7 +323,7 @@ export function LaunchForm() {
               <div className="h-5 w-5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
                 <span className="text-white text-xs font-bold">Z</span>
               </div>
-              <span className="text-sm text-gray-600">Deploy in Zora Ecosystem</span>
+              <span className="text-sm text-secondary">Deploy in Zora Ecosystem</span>
             </div>
             <div className="flex flex-col items-center gap-2">
               <Button
@@ -485,7 +485,7 @@ export function LaunchForm() {
             {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600"
+              className="w-full bg-gradient-to-r from-accent-blue to-accent-blue/80 hover:from-accent-blue/90 hover:to-accent-blue/70 text-primary"
               disabled={!isConnected || isDeploying || !isSupportedChain}
               size="lg"
             >
@@ -552,13 +552,13 @@ export function LaunchForm() {
             {/* Progress Bar */}
             {isDeploying && progress > 0 && (
               <div className="mt-4 space-y-2">
-                <div className="flex justify-between text-sm text-gray-600">
+                <div className="flex justify-between text-sm text-secondary">
                   <span>Progress</span>
                   <span>{progress}%</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="w-full bg-card-dark rounded-full h-2">
                   <div 
-                    className="bg-gradient-to-r from-red-500 to-orange-500 h-2 rounded-full transition-all duration-300 ease-out"
+                    className="bg-gradient-to-r from-accent-blue to-accent-blue/80 h-2 rounded-full transition-all duration-300 ease-out"
                     style={{ width: `${progress}%` }}
                   ></div>
                 </div>
@@ -566,19 +566,19 @@ export function LaunchForm() {
             )}
 
             {!isConnected && (
-              <p className="text-center text-sm text-orange-600">
+              <p className="text-center text-sm text-accent-blue">
                 🔗 Conecta tu wallet de Farcaster para continuar
               </p>
             )}
 
             {isConnected && !isSupportedChain && (
-              <p className="text-center text-sm text-red-600">
+              <p className="text-center text-sm text-price-negative">
                 ⚠️ Por favor cambia a Base Mainnet (8453) o Base Sepolia (84532)
               </p>
             )}
 
             {isConnected && isSupportedChain && (
-              <p className="text-center text-sm text-green-600">
+              <p className="text-center text-sm text-price-positive">
                 ✅ Ready to create your token
               </p>
             )}

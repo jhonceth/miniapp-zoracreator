@@ -34,9 +34,28 @@ export default function TimeSeriesChart({
 
   // Effect to create time series chart - VERSIÓN CORREGIDA
   useEffect(() => {
-    if (!containerRef.current || data.length === 0) return;
+    console.log('🔍 TimeSeriesChart useEffect triggered:', {
+      hasContainer: !!containerRef.current,
+      dataLength: data?.length || 0,
+      contractAddress,
+      selectedPeriod,
+      isLoading,
+      error,
+      rawResponse: !!rawResponse
+    });
+
+    if (!containerRef.current) {
+      console.log('❌ No container ref available');
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      console.log('❌ No data available for chart:', data);
+      return;
+    }
 
     console.log('🎯 Creating time series chart with API data:', data.length, 'points');
+    console.log('📊 Sample data points:', data.slice(0, 3));
 
     // Detectar si es móvil
     const isMobile = window.innerWidth < 768;
@@ -463,19 +482,19 @@ export default function TimeSeriesChart({
           {/* Period Selector */}
           {onPeriodChange && (
             <div className="w-full sm:w-auto">
-              <label className="block text-xs font-medium text-gray-700 mb-1 sm:text-sm sm:mb-2">
-                📅 Data Period:
+              <label className="block text-xs font-medium text-secondary mb-1">
+                📅 Period:
               </label>
               <select
                 value={selectedPeriod}
                 onChange={(e) => onPeriodChange(e.target.value as any)}
-                className="w-full sm:w-auto px-3 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full sm:w-auto px-2 py-1 text-xs border border-card-dark rounded-md bg-card-dark text-primary focus:outline-none focus:ring-2 focus:ring-accent-blue focus:border-transparent"
               >
-                <option value="1W" disabled>1 Week (Premium Soon)</option>
-                <option value="1M">1 Month</option>
-                <option value="3M" disabled>3 Months (Premium Soon)</option>
-                <option value="1Y" disabled>1 Year (Premium Soon)</option>
-                <option value="ALL" disabled>All Time (Premium Soon)</option>
+                <option value="1W" disabled>1W (Soon)</option>
+                <option value="1M">1M</option>
+                <option value="3M" disabled>3M (Soon)</option>
+                <option value="1Y" disabled>1Y (Soon)</option>
+                <option value="ALL" disabled>All (Soon)</option>
               </select>
             </div>
           )}

@@ -98,13 +98,13 @@ export function UserMenu({ className = "" }: UserMenuProps) {
       {/* Avatar Trigger */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1 p-1 rounded-full hover:bg-gray-100 transition-colors duration-200"
+        className="flex items-center gap-1 p-1 rounded-full hover:bg-card-dark/50 transition-colors duration-200"
       >
         <div className="relative">
           <Image
             src={avatarUrl}
             alt="Profile"
-            className="w-8 h-8 rounded-full border-2 border-purple-200 shadow-md"
+            className="w-8 h-8 rounded-full border-2 border-accent-blue/20 shadow-md"
             width={32}
             height={32}
             onError={(e) => {
@@ -112,12 +112,12 @@ export function UserMenu({ className = "" }: UserMenuProps) {
               e.currentTarget.src = '/icon.png';
             }}
           />
-          <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
-            <CheckCircle className="w-1.5 h-1.5 text-white" />
+          <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-price-positive rounded-full border-2 border-card-dark flex items-center justify-center">
+            <CheckCircle className="w-1.5 h-1.5 text-primary" />
           </div>
         </div>
         <ChevronDown 
-          className={`w-3 h-3 text-gray-600 transition-transform duration-200 ${
+          className={`w-3 h-3 text-secondary transition-transform duration-200 ${
             isOpen ? 'rotate-180' : ''
           }`} 
         />
@@ -128,19 +128,19 @@ export function UserMenu({ className = "" }: UserMenuProps) {
         <>
           {/* Backdrop */}
           <div 
-            className="fixed inset-0 z-10" 
+            className="fixed inset-0 z-[999998]" style={{zIndex: 999998, position: 'fixed'}} 
             onClick={() => setIsOpen(false)}
           />
           
           {/* Menu Content */}
-          <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-20 overflow-hidden">
+          <div className="fixed right-4 top-20 w-80 bg-card-dark rounded-lg shadow-xl border-2 border-white z-[999999] overflow-hidden" style={{zIndex: 999999, position: 'fixed'}}>
             {/* Header */}
-            <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-4 border-b border-gray-200">
+            <div className="bg-gradient-to-r from-accent-blue/10 to-accent-blue/5 p-4 border-b border-card-dark">
               <div className="flex items-center gap-3">
                 <Image
                   src={avatarUrl}
                   alt="Profile"
-                  className="w-12 h-12 rounded-full border-2 border-purple-200 shadow-md"
+                  className="w-12 h-12 rounded-full border-2 border-accent-blue/20 shadow-md"
                   width={48}
                   height={48}
                   onError={(e) => {
@@ -148,19 +148,19 @@ export function UserMenu({ className = "" }: UserMenuProps) {
                   }}
                 />
                 <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900">{displayName}</h3>
+                  <h3 className="font-semibold text-primary">{displayName}</h3>
                   <div className="flex items-center gap-2 mt-1">
-                    <Badge className="bg-purple-100 text-purple-800 border-purple-200 text-xs">
+                    <Badge className="bg-accent-blue/20 text-accent-blue border-accent-blue/30 text-xs">
                       @{username}
                     </Badge>
                     {farcasterProfile && (
-                      <Badge className="bg-blue-100 text-blue-800 border-blue-200 text-xs">
+                      <Badge className="bg-accent-blue/20 text-accent-blue border-accent-blue/30 text-xs">
                         <Zap className="w-2 h-2 mr-1" />
                         Farcaster
                       </Badge>
                     )}
                     {ensProfile && (
-                      <Badge className="bg-green-100 text-green-800 border-green-200 text-xs">
+                      <Badge className="bg-price-positive/20 text-price-positive border-price-positive/30 text-xs">
                         <Globe className="w-2 h-2 mr-1" />
                         ENS
                       </Badge>
@@ -175,11 +175,11 @@ export function UserMenu({ className = "" }: UserMenuProps) {
               {/* FID */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Hash className="w-4 h-4 text-purple-600" />
-                  <span className="text-sm font-medium text-gray-700">FID</span>
+                  <Hash className="w-4 h-4 text-accent-blue" />
+                  <span className="text-sm font-medium text-secondary">FID</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-mono text-gray-900">{userData.fid}</span>
+                  <span className="text-sm font-mono text-primary">{userData.fid}</span>
                   <Button
                     variant="outline"
                     size="sm"
@@ -187,7 +187,7 @@ export function UserMenu({ className = "" }: UserMenuProps) {
                     className="h-6 w-6 p-0"
                   >
                     {copiedField === "fid" ? (
-                      <CheckCircle className="h-3 w-3 text-green-600" />
+                      <CheckCircle className="h-3 w-3 text-price-positive" />
                     ) : (
                       <Copy className="h-3 w-3" />
                     )}
@@ -199,20 +199,20 @@ export function UserMenu({ className = "" }: UserMenuProps) {
               {isConnected && address && (
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <Wallet className="w-4 h-4 text-blue-600" />
-                    <span className="text-sm font-medium text-gray-700">Wallet Connected</span>
-                    <Badge className="bg-green-100 text-green-800 border-green-200 text-xs">
+                    <Wallet className="w-4 h-4 text-accent-blue" />
+                    <span className="text-sm font-medium text-secondary">Wallet Connected</span>
+                    <Badge className="bg-price-positive/20 text-price-positive border-price-positive/30 text-xs">
                       <CheckCircle className="w-2 h-2 mr-1" />
                       Connected
                     </Badge>
                   </div>
                   
-                  <div className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-between p-2 bg-card-dark/50 rounded-lg">
                     <div className="flex-1">
-                      <p className="text-xs font-mono text-gray-900 break-all">
+                      <p className="text-xs font-mono text-primary break-all">
                         {formatAddress(address)}
                       </p>
-                      <p className="text-xs text-gray-500">Base Network</p>
+                      <p className="text-xs text-secondary">Base Network</p>
                     </div>
                     <div className="flex items-center gap-1 ml-2">
                       <Button
@@ -222,7 +222,7 @@ export function UserMenu({ className = "" }: UserMenuProps) {
                         className="h-6 w-6 p-0"
                       >
                         {copiedField === "wallet" ? (
-                          <CheckCircle className="h-3 w-3 text-green-600" />
+                          <CheckCircle className="h-3 w-3 text-price-positive" />
                         ) : (
                           <Copy className="h-3 w-3" />
                         )}
@@ -242,20 +242,20 @@ export function UserMenu({ className = "" }: UserMenuProps) {
 
               {/* No Wallet Connected */}
               {!isConnected && (
-                <div className="text-center py-3 bg-gray-50 rounded-lg">
-                  <Wallet className="w-6 h-6 text-gray-400 mx-auto mb-2" />
-              <p className="text-sm text-gray-600">No wallet connected</p>
-              <p className="text-xs text-gray-500">Connect your wallet to create tokens</p>
+                <div className="text-center py-3 bg-card-dark/50 rounded-lg">
+                  <Wallet className="w-6 h-6 text-secondary mx-auto mb-2" />
+              <p className="text-sm text-secondary">No wallet connected</p>
+              <p className="text-xs text-secondary">Connect your wallet to create tokens</p>
                 </div>
               )}
             </div>
 
             {/* Actions */}
-            <div className="border-t border-gray-200 p-4 space-y-2">
+            <div className="border-t border-card-dark p-4 space-y-2">
               <Link href="/profile">
                 <Button
                   variant="outline"
-                  className="w-full flex items-center gap-2 text-purple-600 border-purple-200 hover:bg-purple-50"
+                  className="w-full flex items-center gap-2 text-accent-blue border-accent-blue/20 hover:bg-accent-blue/5"
                 >
                   <Zap className="w-4 h-4" />
                   View My Complete Profile
@@ -265,7 +265,7 @@ export function UserMenu({ className = "" }: UserMenuProps) {
               <Button
                 variant="outline"
                 onClick={signOut}
-                className="w-full flex items-center gap-2 text-red-600 border-red-200 hover:bg-red-50"
+                className="w-full flex items-center gap-2 text-price-negative border-price-negative/20 hover:bg-price-negative/5"
               >
                 <LogOut className="w-4 h-4" />
                 Sign Out

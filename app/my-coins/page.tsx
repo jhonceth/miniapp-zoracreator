@@ -128,23 +128,23 @@ export default function MyCoinsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-[#0A0F1C] to-[#101A2D] pb-20">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-4 py-4">
+      <div className="bg-card-dark border-b border-card-dark px-4 py-4">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-xl font-bold text-gray-900">My Coins</h1>
-              <p className="text-sm text-gray-600">Tokens created by you</p>
+              <h1 className="text-xl font-bold text-primary">My Coins</h1>
+              <p className="text-sm text-secondary">Tokens created by you</p>
             </div>
             <div className="flex items-center gap-2">
               {/* View Mode Toggle */}
-              <div className="flex items-center bg-gray-100 rounded-lg p-1">
+              <div className="flex items-center bg-card-dark rounded-lg p-1">
                 <Button
                   variant={viewMode === 'grid' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setViewMode('grid')}
-                  className={`h-8 w-8 p-0 ${viewMode === 'grid' ? 'bg-white shadow-sm' : ''}`}
+                  className={`h-8 w-8 p-0 ${viewMode === 'grid' ? 'bg-accent-blue shadow-sm' : ''}`}
                 >
                   <Grid3X3 className="w-4 h-4" />
                 </Button>
@@ -152,7 +152,7 @@ export default function MyCoinsPage() {
                   variant={viewMode === 'list' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setViewMode('list')}
-                  className={`h-8 w-8 p-0 ${viewMode === 'list' ? 'bg-white shadow-sm' : ''}`}
+                  className={`h-8 w-8 p-0 ${viewMode === 'list' ? 'bg-accent-blue shadow-sm' : ''}`}
                 >
                   <List className="w-4 h-4" />
                 </Button>
@@ -174,7 +174,7 @@ export default function MyCoinsPage() {
           <div className="flex items-center gap-3">
             {/* Search Input */}
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-secondary w-4 h-4" />
               <Input
                 type="text"
                 placeholder="Search by name, symbol or address..."
@@ -186,11 +186,11 @@ export default function MyCoinsPage() {
 
             {/* Sort Dropdown */}
             <div className="flex items-center gap-2">
-              <ArrowUpDown className="w-4 h-4 text-gray-500" />
+              <ArrowUpDown className="w-4 h-4 text-secondary" />
               <select
                 value={sortOrder}
                 onChange={(e) => handleSortChange(e.target.value as 'newest' | 'oldest')}
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="px-3 py-2 border border-card-dark rounded-md text-sm bg-card-dark text-primary focus:outline-none focus:ring-2 focus:ring-accent-blue focus:border-transparent"
               >
                 <option value="newest">Most Recent</option>
                 <option value="oldest">Oldest</option>
@@ -206,31 +206,31 @@ export default function MyCoinsPage() {
         {isLoading && (
           <div className="flex items-center justify-center py-12">
             <div className="flex items-center gap-3">
-              <Loader2 className="w-6 h-6 animate-spin text-purple-600" />
-              <span className="text-gray-600">Loading your coins...</span>
+              <Loader2 className="w-6 h-6 animate-spin text-accent-blue" />
+              <span className="text-secondary">Loading your coins...</span>
             </div>
           </div>
         )}
 
         {/* Error State */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+          <div className="bg-price-negative/10 border border-price-negative/20 rounded-lg p-4 mb-6">
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-              <span className="text-red-800 font-medium">Error</span>
+              <div className="w-2 h-2 bg-price-negative rounded-full"></div>
+              <span className="text-price-negative font-medium">Error</span>
             </div>
-            <p className="text-red-700 text-sm mt-1">{error}</p>
+            <p className="text-price-negative text-sm mt-1">{error}</p>
           </div>
         )}
 
         {/* No Coins State */}
         {!isLoading && !error && (!coins || coins.length === 0) && (
           <div className="text-center py-12">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Zap className="w-8 h-8 text-gray-400" />
+            <div className="w-16 h-16 bg-card-dark rounded-full flex items-center justify-center mx-auto mb-4">
+              <Zap className="w-8 h-8 text-secondary" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No coins created</h3>
-            <p className="text-gray-600 mb-4">
+            <h3 className="text-lg font-medium text-primary mb-2">No coins created</h3>
+            <p className="text-secondary mb-4">
               {isConnected ? 
                 `No tokens found for address ${address?.substring(0, 6)}...${address?.substring(address.length - 4)}` :
                 "Connect your wallet to see your created tokens"
@@ -238,12 +238,12 @@ export default function MyCoinsPage() {
             </p>
             <div className="space-y-2">
               <Link href="/launch">
-                <Button className="bg-gradient-to-r from-purple-600 to-blue-600 text-white">
+                <Button className="bg-gradient-to-r from-accent-blue to-accent-blue/80 text-primary">
                   Create My First Token
                 </Button>
               </Link>
               {isConnected && (
-                <div className="text-xs text-gray-500">
+                <div className="text-xs text-secondary">
                   <p>Debug: Address = {address}</p>
                   <p>Debug: IsConnected = {isConnected.toString()}</p>
                   <p>Debug: Coins = {coins?.length || 0}</p>
@@ -256,17 +256,17 @@ export default function MyCoinsPage() {
         {/* No Search Results */}
         {!isLoading && !error && coins && coins.length > 0 && filteredAndSortedCoins.length === 0 && (
           <div className="text-center py-12">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Search className="w-8 h-8 text-gray-400" />
+            <div className="w-16 h-16 bg-card-dark rounded-full flex items-center justify-center mx-auto mb-4">
+              <Search className="w-8 h-8 text-secondary" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No results found</h3>
-            <p className="text-gray-600 mb-4">
+            <h3 className="text-lg font-medium text-primary mb-2">No results found</h3>
+            <p className="text-secondary mb-4">
               No tokens match &quot;{searchTerm}&quot;
             </p>
             <Button
               variant="outline"
               onClick={() => handleSearchChange('')}
-              className="text-purple-600 border-purple-200 hover:bg-purple-50"
+              className="text-accent-blue border-accent-blue/20 hover:bg-accent-blue/5"
             >
               Clear search
             </Button>
@@ -277,23 +277,23 @@ export default function MyCoinsPage() {
         {!isLoading && !error && coins && coins.length > 0 && (
           <>
             {/* Stats Summary */}
-            <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
+            <div className="bg-card-dark rounded-lg border border-card-dark p-4 mb-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Zap className="w-5 h-5 text-purple-600" />
-                  <span className="font-medium text-gray-900">Summary</span>
+                  <Zap className="w-5 h-5 text-accent-blue" />
+                  <span className="font-medium text-primary">Summary</span>
                   {searchTerm && (
-                    <Badge className="bg-blue-100 text-blue-800 border-blue-200 text-xs">
+                    <Badge className="bg-accent-blue/20 text-accent-blue border-accent-blue/30 text-xs">
                       Filtered: &quot;{searchTerm}&quot;
                     </Badge>
                   )}
                 </div>
                 <div className="flex items-center gap-2">
-                  <Badge className="bg-purple-100 text-purple-800 border-purple-200">
+                  <Badge className="bg-accent-blue/20 text-accent-blue border-accent-blue/30">
                     {filteredAndSortedCoins.length} of {coins.length} tokens
                   </Badge>
                   {totalPages > 1 && (
-                    <Badge className="bg-gray-100 text-gray-800 border-gray-200 text-xs">
+                    <Badge className="bg-card-dark text-secondary border-card-dark text-xs">
                       Page {currentPage} of {totalPages}
                     </Badge>
                   )}
@@ -307,7 +307,7 @@ export default function MyCoinsPage() {
                 {paginatedCoins.map((coin) => (
                   <Card 
                     key={coin.address} 
-                    className="hover:shadow-lg transition-shadow duration-200 cursor-pointer"
+                    className="hover:shadow-lg transition-shadow duration-200 cursor-pointer bg-card-dark border-card-dark hover:bg-card-dark/80 hover:scale-[1.02] hover:shadow-xl hover:border-accent-blue/30"
                     onClick={() => window.location.href = `/token/${coin.address}?from=/my-coins`}
                   >
                       <CardHeader className="p-4">
@@ -329,7 +329,7 @@ export default function MyCoinsPage() {
                                   <Image
                                     src={tokenImage}
                                     alt={coin.name || 'Token'}
-                                    className="w-12 h-12 rounded-full border-2 border-purple-200 object-cover"
+                                    className="w-12 h-12 rounded-full border-2 border-accent-blue/20 object-cover"
                                     width={48}
                                     height={48}
                                     onError={(e) => {
@@ -341,23 +341,23 @@ export default function MyCoinsPage() {
                               } else {
                                 console.log(`⚠️ No token image found for ${coin.name}, using fallback`);
                                 return (
-                                  <div className="w-12 h-12 rounded-full border-2 border-purple-200 bg-gradient-to-r from-purple-400 to-blue-400 flex items-center justify-center">
-                                    <Zap className="w-6 h-6 text-white" />
+                                  <div className="w-12 h-12 rounded-full border-2 border-accent-blue/20 bg-gradient-to-r from-accent-blue/60 to-accent-blue/40 flex items-center justify-center">
+                                    <Zap className="w-6 h-6 text-primary" />
                                   </div>
                                 );
                               }
                             })()}
-                            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
-                              <CheckCircle className="w-2 h-2 text-white" />
+                            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-price-positive rounded-full border-2 border-card-dark flex items-center justify-center">
+                              <CheckCircle className="w-2 h-2 text-primary" />
                             </div>
                           </div>
 
                           {/* Token Info */}
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-gray-900 truncate">
+                            <h3 className="font-semibold text-primary truncate">
                               {coin.name || 'Sin nombre'}
                             </h3>
-                            <p className="text-sm text-gray-600 truncate">
+                            <p className="text-sm text-secondary truncate">
                               ${coin.symbol || 'N/A'}
                             </p>
                           </div>
@@ -369,47 +369,47 @@ export default function MyCoinsPage() {
                         <div className="space-y-2">
                           <div className="flex items-center justify-between text-xs">
                             <div className="flex items-center gap-1">
-                              <DollarSign className="w-3 h-3 text-green-600" />
-                              <span className="text-gray-600">Market Cap</span>
+                              <DollarSign className="w-3 h-3 text-price-positive" />
+                              <span className="text-secondary">Market Cap</span>
                             </div>
-                            <span className="font-medium text-gray-900">
+                            <span className="font-medium text-primary">
                               ${formatNumber(coin.marketCap)}
                             </span>
                           </div>
 
                           <div className="flex items-center justify-between text-xs">
                             <div className="flex items-center gap-1">
-                              <Users className="w-3 h-3 text-blue-600" />
-                              <span className="text-gray-600">Holders</span>
+                              <Users className="w-3 h-3 text-accent-blue" />
+                              <span className="text-secondary">Holders</span>
                             </div>
-                            <span className="font-medium text-gray-900">
+                            <span className="font-medium text-primary">
                               {formatNumber(coin.uniqueHolders)}
                             </span>
                           </div>
 
                           <div className="flex items-center justify-between text-xs">
                             <div className="flex items-center gap-1">
-                              <TrendingUp className="w-3 h-3 text-purple-600" />
-                              <span className="text-gray-600">24h Volume</span>
+                              <TrendingUp className="w-3 h-3 text-accent-blue" />
+                              <span className="text-secondary">24h Volume</span>
                             </div>
-                            <span className="font-medium text-gray-900">
+                            <span className="font-medium text-primary">
                               ${formatNumber(coin.volume24h)}
                             </span>
                           </div>
 
                           <div className="flex items-center justify-between text-xs">
                             <div className="flex items-center gap-1">
-                              <Calendar className="w-3 h-3 text-gray-600" />
-                              <span className="text-gray-600">Created</span>
+                              <Calendar className="w-3 h-3 text-secondary" />
+                              <span className="text-secondary">Created</span>
                             </div>
-                            <span className="font-medium text-gray-900">
+                            <span className="font-medium text-primary">
                               {formatDate(coin.createdAt)}
                             </span>
                           </div>
                         </div>
 
                         {/* Actions */}
-                        <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+                        <div className="flex items-center justify-between mt-4 pt-3 border-t border-card-dark">
                           <div className="flex items-center gap-1">
                             <Button
                               variant="outline"
@@ -421,7 +421,7 @@ export default function MyCoinsPage() {
                               className="h-6 w-6 p-0"
                             >
                               {copiedField === `token-${coin.address}` ? (
-                                <CheckCircle className="h-3 w-3 text-green-600" />
+                                <CheckCircle className="h-3 w-3 text-price-positive" />
                               ) : (
                                 <Copy className="h-3 w-3" />
                               )}
@@ -431,7 +431,7 @@ export default function MyCoinsPage() {
                               target="_blank"
                               rel="noopener noreferrer"
                               onClick={(e) => e.stopPropagation()}
-                              className="inline-flex items-center justify-center h-6 w-6 rounded border border-gray-200 bg-white hover:bg-gray-50"
+                              className="inline-flex items-center justify-center h-6 w-6 rounded border border-card-dark bg-white/90 hover:bg-white"
                               title="View on BaseScan"
                             >
                               <Image src="/bscan.png" alt="BaseScan" width={14} height={14} className="rounded" />
@@ -441,7 +441,7 @@ export default function MyCoinsPage() {
                               target="_blank"
                               rel="noopener noreferrer"
                               onClick={(e) => e.stopPropagation()}
-                              className="inline-flex items-center justify-center h-6 w-6 rounded border border-blue-200 bg-white hover:bg-blue-50"
+                              className="inline-flex items-center justify-center h-6 w-6 rounded border border-accent-blue/20 bg-white/90 hover:bg-white"
                               title="View on DexScreener"
                             >
                               <Image src="/dexs.ico" alt="DexScreener" width={14} height={14} className="rounded-full" />
@@ -451,7 +451,7 @@ export default function MyCoinsPage() {
                               target="_blank"
                               rel="noopener noreferrer"
                               onClick={(e) => e.stopPropagation()}
-                              className="inline-flex items-center justify-center h-6 w-6 rounded border border-purple-200 bg-white hover:bg-purple-50"
+                              className="inline-flex items-center justify-center h-6 w-6 rounded border border-accent-blue/20 bg-white/90 hover:bg-white"
                               title="View on Zora"
                             >
                               <Image src="/icozora.png" alt="Zora" width={14} height={14} className="rounded" />
@@ -461,13 +461,13 @@ export default function MyCoinsPage() {
                               target="_blank"
                               rel="noopener noreferrer"
                               onClick={(e) => e.stopPropagation()}
-                              className="inline-flex items-center justify-center h-6 w-6 rounded border border-purple-200 bg-white hover:bg-purple-50"
+                              className="inline-flex items-center justify-center h-6 w-6 rounded border border-accent-blue/20 bg-white/90 hover:bg-white"
                               title="View on ZBase Analytics"
                             >
                               <img src="/icom.png" alt="ZBase" className="w-3.5 h-3.5" />
                             </a>
                           </div>
-                          <Badge className="bg-blue-100 text-blue-800 border-blue-200 text-xs">
+                          <Badge className="bg-accent-blue/20 text-accent-blue border-accent-blue/30 text-xs">
                             View Details
                           </Badge>
                         </div>
@@ -480,7 +480,7 @@ export default function MyCoinsPage() {
                 {paginatedCoins.map((coin) => (
                   <Card 
                     key={coin.address} 
-                    className="hover:shadow-md transition-shadow duration-200 cursor-pointer"
+                    className="hover:shadow-md transition-shadow duration-200 cursor-pointer bg-card-dark border-card-dark hover:bg-card-dark/80 hover:scale-[1.01] hover:shadow-xl hover:border-accent-blue/30"
                     onClick={() => window.location.href = `/token/${coin.address}?from=/my-coins`}
                   >
                       <CardContent className="p-4">
@@ -499,7 +499,7 @@ export default function MyCoinsPage() {
                                   <Image
                                     src={tokenImage}
                                     alt={coin.name || 'Token'}
-                                    className="w-10 h-10 rounded-full border-2 border-purple-200 object-cover"
+                                    className="w-10 h-10 rounded-full border-2 border-accent-blue/20 object-cover"
                                     width={40}
                                     height={40}
                                     onError={(e) => {
@@ -509,14 +509,14 @@ export default function MyCoinsPage() {
                                 );
                               } else {
                                 return (
-                                  <div className="w-10 h-10 rounded-full border-2 border-purple-200 bg-gradient-to-r from-purple-400 to-blue-400 flex items-center justify-center">
-                                    <Zap className="w-5 h-5 text-white" />
+                                  <div className="w-10 h-10 rounded-full border-2 border-accent-blue/20 bg-gradient-to-r from-accent-blue/60 to-accent-blue/40 flex items-center justify-center">
+                                    <Zap className="w-5 h-5 text-primary" />
                                   </div>
                                 );
                               }
                             })()}
-                            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
-                              <CheckCircle className="w-1.5 h-1.5 text-white" />
+                            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-price-positive rounded-full border-2 border-card-dark flex items-center justify-center">
+                              <CheckCircle className="w-1.5 h-1.5 text-primary" />
                             </div>
                           </div>
 
@@ -524,10 +524,10 @@ export default function MyCoinsPage() {
                           <div className="flex-1 min-w-0">
                             {/* First line: name left, ticker right */}
                             <div className="flex items-center justify-between gap-3">
-                              <h3 className="font-semibold text-gray-900 truncate">
+                              <h3 className="font-semibold text-primary truncate">
                                 {coin.name || 'Sin nombre'}
                               </h3>
-                              <span className="text-sm text-gray-600 flex-shrink-0">${coin.symbol || 'N/A'}</span>
+                              <span className="text-sm text-secondary flex-shrink-0">${coin.symbol || 'N/A'}</span>
                             </div>
                             {/* Second line: link icons */}
                             <div className="mt-2 flex items-center gap-2">
@@ -542,7 +542,7 @@ export default function MyCoinsPage() {
                                 title="Copy Address"
                               >
                                 {copiedField === `token-${coin.address}` ? (
-                                  <CheckCircle className="h-3 w-3 text-green-600" />
+                                  <CheckCircle className="h-3 w-3 text-price-positive" />
                                 ) : (
                                   <Copy className="h-3 w-3" />
                                 )}
@@ -552,7 +552,7 @@ export default function MyCoinsPage() {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 onClick={(e) => e.stopPropagation()}
-                                className="inline-flex items-center justify-center h-6 w-6 rounded border border-gray-200 bg-white hover:bg-gray-50"
+                                className="inline-flex items-center justify-center h-6 w-6 rounded border border-card-dark bg-white/90 hover:bg-white"
                                 title="View on BaseScan"
                               >
                                 <Image src="/bscan.png" alt="BaseScan" width={12} height={12} className="rounded" />
@@ -562,7 +562,7 @@ export default function MyCoinsPage() {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 onClick={(e) => e.stopPropagation()}
-                                className="inline-flex items-center justify-center h-6 w-6 rounded border border-blue-200 bg-white hover:bg-blue-50"
+                                className="inline-flex items-center justify-center h-6 w-6 rounded border border-accent-blue/20 bg-white/90 hover:bg-white"
                                 title="View on DexScreener"
                               >
                                 <Image src="/dexs.ico" alt="DexScreener" width={12} height={12} className="rounded-full" />
@@ -572,7 +572,7 @@ export default function MyCoinsPage() {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 onClick={(e) => e.stopPropagation()}
-                                className="inline-flex items-center justify-center h-6 w-6 rounded border border-purple-200 bg-white hover:bg-purple-50"
+                                className="inline-flex items-center justify-center h-6 w-6 rounded border border-accent-blue/20 bg-white/90 hover:bg-white"
                                 title="View on Zora"
                               >
                                 <Image src="/icozora.png" alt="Zora" width={12} height={12} className="rounded" />
@@ -582,7 +582,7 @@ export default function MyCoinsPage() {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 onClick={(e) => e.stopPropagation()}
-                                className="inline-flex items-center justify-center h-6 w-6 rounded border border-purple-200 bg-white hover:bg-purple-50"
+                                className="inline-flex items-center justify-center h-6 w-6 rounded border border-accent-blue/20 bg-white/90 hover:bg-white"
                                 title="View on ZBase Analytics"
                               >
                                 <img src="/icom.png" alt="ZBase" className="w-3.5 h-3.5" />
@@ -629,7 +629,7 @@ export default function MyCoinsPage() {
                         variant={currentPage === pageNum ? "default" : "outline"}
                         size="sm"
                         onClick={() => setCurrentPage(pageNum)}
-                        className={`w-8 h-8 p-0 ${currentPage === pageNum ? 'bg-purple-600 text-white' : ''}`}
+                        className={`w-8 h-8 p-0 ${currentPage === pageNum ? 'bg-accent-blue text-primary' : ''}`}
                       >
                         {pageNum}
                       </Button>

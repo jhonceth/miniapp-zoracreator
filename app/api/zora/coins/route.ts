@@ -135,9 +135,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "No data returned from Zora API" }, { status: 500 })
     }
 
-    if (response.errors && response.errors.length > 0) {
-      console.error("[v0] GraphQL errors:", response.errors)
-      return NextResponse.json({ error: "Error fetching data from Zora", details: response.errors }, { status: 500 })
+    if ((response as any).errors && (response as any).errors.length > 0) {
+      console.error("[v0] GraphQL errors:", (response as any).errors)
+      return NextResponse.json({ error: "Error fetching data from Zora", details: (response as any).errors }, { status: 500 })
     }
 
     const allEdges = response.data?.exploreList?.edges || []

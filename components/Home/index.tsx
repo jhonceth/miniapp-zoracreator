@@ -46,36 +46,36 @@ export default function Home() {
   };
 
   return (
-    <div className="bg-background text-foreground h-screen flex flex-col">
+    <div className="bg-gradient-to-br from-[#0A0F1C] to-[#101A2D] text-primary h-screen flex flex-col">
       {/* Top Navigation Bar */}
-      <div className="w-full flex justify-between items-center px-4 py-2 border-b border-border bg-background flex-shrink-0">
+      <div className="w-full flex justify-between items-center px-4 py-2 border-b border-card-dark bg-card-dark/50 backdrop-blur-sm flex-shrink-0 relative z-10" style={{zIndex: 10}}>
         <div className="flex items-center gap-2">
           <Image
             src="/icon.png"
-            alt="Zora Creator Logo"
+            alt="ZCreate"
             className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg"
             width={40}
             height={40}
           />
-          <span className="text-lg font-bold text-foreground">ZCreate</span>
+          <span className="text-lg font-bold text-primary">ZCreate</span>
         </div>
         
-        {/* Search Bar - Centered */}
-        <div className="flex-1 flex justify-center">
-          <SearchBar />
-        </div>
+        {/* Spacer */}
+        <div className="flex-1"></div>
         
         {/* User Menu */}
-        <UserMenu />
+        <div className="relative" style={{zIndex: 999999}}>
+          <UserMenu />
+        </div>
       </div>
 
       {/* Main Content - Zora Coins Explorer */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto relative" style={{zIndex: 0}}>
         <ZoraCoinsExplorer />
       </div>
       
       {/* Bottom Navigation */}
-      <div className="flex-shrink-0">
+      <div className="flex-shrink-0 relative" style={{zIndex: 0}}>
         <BottomNavigation />
       </div>
     </div>

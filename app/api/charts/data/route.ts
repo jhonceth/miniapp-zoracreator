@@ -12,9 +12,19 @@ export async function GET(request: NextRequest) {
     const contractAddress = searchParams.get('contractAddress');
     const timeframe = searchParams.get('timeframe') || '1M';
     const network = searchParams.get('network') || 'base';
+    const chartType = searchParams.get('chartType') || 'line';
     const preferredBaseTokens = searchParams.get('preferredBaseTokens')?.split(',') || ['ZORA', 'WETH', 'USDC', 'USDT'];
 
+    console.log('🚀 Charts API called with:', { 
+      contractAddress, 
+      timeframe, 
+      network, 
+      chartType,
+      preferredBaseTokens 
+    });
+
     if (!contractAddress) {
+      console.log('❌ Missing contractAddress parameter');
       return NextResponse.json(
         { error: 'contractAddress es requerido' },
         { status: 400 }
@@ -25,6 +35,7 @@ export async function GET(request: NextRequest) {
       contractAddress, 
       timeframe, 
       network, 
+      chartType,
       preferredBaseTokens 
     });
 
@@ -33,9 +44,11 @@ export async function GET(request: NextRequest) {
     const cacheKey = `chart:${contractAddress}:${timeframe}:${network}:${preferredBaseTokens.join(',')}:${today}`;
     
     // Intentar obtener datos del caché primero
+    console.log('🔍 Checking cache for key:', cacheKey);
     const cachedData = await getCache(cacheKey);
     if (cachedData) {
       console.log('✅ Datos obtenidos del caché:', cacheKey);
+      console.log('📊 Cached data sample:', cachedData.chartData?.slice(0, 3));
       return NextResponse.json({
         ...cachedData,
         cached: true,
@@ -44,6 +57,7 @@ export async function GET(request: NextRequest) {
     }
 
     try {
+      console.log('🌐 Fetching fresh data from The Graph...');
       // Usar el sistema modular
       const result = await getTokenChartData(
         contractAddress,
@@ -53,7 +67,14 @@ export async function GET(request: NextRequest) {
         env.THEGRAPH_API_KEY || undefined
       );
 
+      console.log('📡 The Graph result:', {
+        success: result.success,
+        dataLength: result.chartData?.length || 0,
+        error: result.error
+      });
+
       if (!result.success) {
+        console.log('❌ The Graph API failed:', result.error);
         return NextResponse.json({
           success: false,
           error: result.error,
@@ -62,6 +83,7 @@ export async function GET(request: NextRequest) {
       }
 
       console.log(`✅ Datos obtenidos exitosamente: ${result.chartData?.length || 0} puntos`);
+      console.log('📊 Sample chart data:', result.chartData?.slice(0, 3));
 
       const responseData = {
         success: true,

@@ -8,10 +8,10 @@ const frame = {
   version: "next",
   imageUrl: `${appUrl}/images/feed.png`,
   button: {
-    title: "Launch ZoraCoin",
+    title: "Launch ZCreate",
     action: {
       type: "launch_frame",
-      name: "Zora Token Creator",
+      name: "ZCreate",
       url: appUrl,
       splashImageUrl: `${appUrl}/images/splash.png`,
       splashBackgroundColor: "#ffffff",
@@ -21,9 +21,9 @@ const frame = {
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: "Zora Token Creator",
+    title: "ZCreate",
     openGraph: {
-      title: "Zora Token Creator",
+      title: "ZCreate",
       description: "Crea tokens en Base usando el Protocolo Zora",
     },
     other: {

@@ -23,11 +23,11 @@ export async function generateMetadata({ params }: TokenPageProps): Promise<Meta
     version: "1",
     imageUrl: ogImageUrl,
     button: {
-      title: "Check Coin",
+      title: "View Coin",
       action: {
         type: "launch_miniapp",
         url: canonicalUrl,
-        name: "ZBase Analytics",
+        name: "Zcreate coin",
         splashImageUrl: `${APP_URL}/icon.png`,
         splashBackgroundColor: "#0B0F1A",
       },
@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: TokenPageProps): Promise<Meta
   }
 
   return {
-    title: `Token ${address} | ZBase Analytics`,
+    title: `Token ${address} | ZCreate Analytics`,
     openGraph: {
       images: [{ url: ogImageUrl, width: 1200, height: 800 }],
     },

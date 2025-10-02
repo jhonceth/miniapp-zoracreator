@@ -47,13 +47,13 @@ export function CreatorCard({ creator, rank }: CreatorCardProps) {
 
   return (
     <Card 
-      className="p-4 hover:bg-accent/50 transition-colors cursor-pointer"
+      className="p-4 bg-card-dark border-card-dark hover:bg-card-dark/80 hover:scale-[1.02] hover:shadow-xl transition-all duration-300 cursor-pointer rounded-2xl shadow-lg hover:border-accent-blue/30"
       onClick={handleCardClick}
     >
       <div className="flex items-start gap-3">
         {/* Rank Badge */}
-        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-          <span className="text-sm font-bold text-primary">#{rank}</span>
+        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-accent-blue/20 flex items-center justify-center">
+          <span className="text-sm font-bold text-accent-blue">#{rank}</span>
         </div>
 
         {/* Avatar and Copy Button */}
@@ -68,8 +68,8 @@ export function CreatorCard({ creator, rank }: CreatorCardProps) {
               }}
             />
           ) : (
-            <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-              <Coins className="w-8 h-8 text-primary" />
+            <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-accent-blue/20 to-accent-blue/5 flex items-center justify-center">
+              <Coins className="w-8 h-8 text-accent-blue" />
             </div>
           )}
 
@@ -83,37 +83,37 @@ export function CreatorCard({ creator, rank }: CreatorCardProps) {
             }}
             title="Copy address"
           >
-            <Copy className={`w-4 h-4 ${copied ? "text-green-500" : ""}`} />
+            <Copy className={`w-4 h-4 ${copied ? "text-price-positive" : "text-secondary"}`} />
           </Button>
         </div>
 
         {/* Creator Info */}
         <div className="flex-1 min-w-0">
           <div className="mb-1">
-            <h3 className="font-semibold text-foreground truncate">{creator.handle}</h3>
+            <h3 className="font-semibold text-primary truncate">{creator.handle}</h3>
           </div>
 
           <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-3">
             <div>
-              <p className="text-xs text-muted-foreground">MCap</p>
-              <p className="text-sm font-semibold text-foreground">{formatCurrency(totalMarketCap)}</p>
+              <p className="text-xs text-secondary">MCap</p>
+              <p className="text-sm font-semibold text-primary">{formatCurrency(totalMarketCap)}</p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Vol 24h</p>
-              <p className="text-sm font-semibold text-foreground">
+              <p className="text-xs text-secondary">Vol 24h</p>
+              <p className="text-sm font-semibold text-primary">
                 {formatCurrency(Number.parseFloat(creator.totalVolume24h))}
               </p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Total Vol</p>
-              <p className="text-sm font-semibold text-foreground">{formatCurrency(totalVolume)}</p>
+              <p className="text-xs text-secondary">Total Vol</p>
+              <p className="text-sm font-semibold text-primary">{formatCurrency(totalVolume)}</p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground flex items-center gap-1">
+              <p className="text-xs text-secondary flex items-center gap-1">
                 <Users className="w-3 h-3" />
                 Holders
               </p>
-              <p className="text-sm font-semibold text-foreground">{creator.uniqueHolders.toLocaleString()}</p>
+              <p className="text-sm font-semibold text-primary">{creator.uniqueHolders.toLocaleString()}</p>
             </div>
           </div>
         </div>

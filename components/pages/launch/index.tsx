@@ -9,7 +9,7 @@ import { UserMenu } from "@/components/UserMenu";
 
 export default function LaunchPage() {
   return (
-    <div className="min-h-screen bg-white pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-[#0A0F1C] to-[#101A2D] pb-20">
       <div className="max-w-4xl mx-auto px-4 py-4 sm:py-6">
         {/* Header with User Menu */}
         <div className="flex items-center justify-between mb-6">
@@ -20,7 +20,7 @@ export default function LaunchPage() {
                 <span className="hidden sm:inline">Back</span>
               </Button>
             </Link>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+            <h1 className="text-xl sm:text-2xl font-bold text-primary">
               Launch Coin
             </h1>
           </div>

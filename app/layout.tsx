@@ -6,7 +6,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Zora Token Creator",
+  title: "ZCreate",
   description: "Create tokens on Base using Zora Protocol",
 };
 

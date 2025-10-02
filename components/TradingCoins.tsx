@@ -888,8 +888,8 @@ export default function TradingCoins({
             onClick={() => setActiveTab('buy')}
             className={`flex-1 py-2 px-4 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'buy'
-                ? 'border-green-500 text-green-600 bg-green-50'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
+                ? 'border-emerald-400 text-white bg-emerald-500'
+                : 'border-transparent text-secondary hover:text-primary'
             }`}
           >
             Buy
@@ -898,8 +898,8 @@ export default function TradingCoins({
             onClick={() => setActiveTab('sell')}
             className={`flex-1 py-2 px-4 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'sell'
-                ? 'border-red-500 text-red-600 bg-red-50'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
+                ? 'border-red-400 text-white bg-red-500'
+                : 'border-transparent text-secondary hover:text-primary'
             }`}
           >
             Sell
@@ -911,23 +911,23 @@ export default function TradingCoins({
           /* Buy Tab Content */
           <div className="space-y-4">
             {/* ETH Balance Display */}
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-green-800">Your ETH Balance</span>
+                <span className="text-sm font-medium text-primary">Balance</span>
+                <span className="text-lg font-bold text-primary">
+                  {formatBalance(balances.eth, 4)} ETH
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-secondary">
+                  ≈ ${tradeState.ethPrice ? (parseFloat(balances.eth) * tradeState.ethPrice).toFixed(2) : '0.00'} USD
+                </span>
                 {tradeState.ethPrice && (
-                  <span className="text-xs text-green-600">
-                    ${tradeState.ethPrice.toFixed(2)}/ETH
+                  <span className="text-xs text-secondary">
+                    Price ETH: ${tradeState.ethPrice.toFixed(2)}
                   </span>
                 )}
               </div>
-              <div className="text-lg font-bold text-green-800">
-                {formatBalance(balances.eth, 4)} ETH
-              </div>
-              {tradeState.ethPrice && (
-                <div className="text-sm text-green-600">
-                  ≈ ${(parseFloat(balances.eth) * tradeState.ethPrice).toFixed(2)} USD
-                </div>
-              )}
             </div>
 
             {/* ETH Input */}
@@ -987,13 +987,13 @@ export default function TradingCoins({
 
             {/* Token Output */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">You&apos;ll Receive</label>
-              <div className="bg-gray-50 border rounded-lg p-4">
-                <div className="text-lg font-bold text-gray-900">
+              <label className="text-xs font-medium text-secondary">You&apos;ll Receive</label>
+              <div className="bg-card-dark border border-card-dark rounded-lg p-3">
+                <div className="text-sm font-semibold text-primary">
                   {tradeState.estimatedOutput || '0.0'} {truncateTokenSymbol(tokenSymbol)}
                 </div>
                 {tradeState.ethPrice && tradeState.sellAmount && tradeState.estimatedOutput && (
-                  <div className="text-sm text-gray-600">
+                  <div className="text-xs text-secondary">
                     ≈ ${(parseFloat(tradeState.estimatedOutput) * tokenPrice).toFixed(2)} USD
                   </div>
                 )}
@@ -1025,18 +1025,20 @@ export default function TradingCoins({
           /* Sell Tab Content */
           <div className="space-y-4">
             {/* Token Balance Display */}
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-red-800">Your {truncateTokenSymbol(tokenSymbol)} Balance</span>
-                <span className="text-xs text-red-600">
-                  Token Price: ${tokenPrice.toFixed(6)}
+                <span className="text-sm font-medium text-primary">Balance</span>
+                <span className="text-lg font-bold text-primary">
+                  {formatBalance(balances.token, 4)} {truncateTokenSymbol(tokenSymbol)}
                 </span>
               </div>
-              <div className="text-lg font-bold text-red-800">
-                {formatBalance(balances.token, 4)} {truncateTokenSymbol(tokenSymbol)}
-              </div>
-              <div className="text-sm text-red-600">
-                ≈ ${(parseFloat(balances.token) * tokenPrice).toFixed(2)} USD
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-secondary">
+                  ≈ ${(parseFloat(balances.token) * tokenPrice).toFixed(2)} USD
+                </span>
+                <span className="text-xs text-secondary">
+                  Token Price: ${tokenPrice.toFixed(6)}
+                </span>
               </div>
             </div>
 
@@ -1097,13 +1099,13 @@ export default function TradingCoins({
 
             {/* ETH Output */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">You&apos;ll Receive</label>
-              <div className="bg-gray-50 border rounded-lg p-4">
-                <div className="text-lg font-bold text-gray-900">
+              <label className="text-xs font-medium text-secondary">You&apos;ll Receive</label>
+              <div className="bg-card-dark border border-card-dark rounded-lg p-3">
+                <div className="text-sm font-semibold text-primary">
                   {tradeState.estimatedOutput || '0.0'} ETH
                 </div>
                 {tradeState.ethPrice && tradeState.sellAmount && tradeState.estimatedOutput && (
-                  <div className="text-sm text-gray-600">
+                  <div className="text-xs text-secondary">
                     ≈ ${(parseFloat(tradeState.estimatedOutput) * tradeState.ethPrice).toFixed(2)} USD
                   </div>
                 )}
