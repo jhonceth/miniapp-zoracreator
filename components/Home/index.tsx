@@ -22,7 +22,7 @@ export default function Home() {
   const shareApp = async () => {
     const base = typeof window !== 'undefined' ? window.location.origin : ''
     const url = base
-    const text = `Create your ZoraCoin directly from Farcaster with this amazing app! 🚀\n\n${url}`
+    const text = `Explore, share, create the best Zoracoin in base ${url}`
     const intent = `https://warpcast.com/~/compose?text=${encodeURIComponent(text)}&embeds[]=${encodeURIComponent(url)}`
     
     // Intento con Mini App composeCast si está disponible
@@ -62,6 +62,16 @@ export default function Home() {
         
         {/* Spacer */}
         <div className="flex-1"></div>
+        
+        {/* Share Button */}
+        <button
+          onClick={shareApp}
+          className="p-2 hover:bg-card-dark/50 rounded-lg flex items-center gap-2 mr-2"
+          title="Share on Farcaster"
+        >
+          <img src="/farcaster.png" alt="Farcaster" className="w-4 h-4" />
+          <Share2 className="h-4 w-4 text-primary" />
+        </button>
         
         {/* User Menu */}
         <div className="relative" style={{zIndex: 999999}}>
