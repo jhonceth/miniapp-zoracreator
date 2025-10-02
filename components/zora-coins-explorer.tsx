@@ -76,14 +76,14 @@ export function ZoraCoinsExplorer() {
           <PriceMarquee />
 
           <TooltipProvider>
-            <TabsList className="w-full grid grid-cols-5 h-auto p-1 bg-card-dark/30 border-card-dark tab-active-blue" style={{zIndex: 0}}>
+            <TabsList className="w-full grid grid-cols-5 h-auto px-1 py-0.5 bg-card-dark/30 border-card-dark tab-active-blue" style={{zIndex: 0}}>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <TabsTrigger
                     value="gainers"
-                    className="flex flex-col items-center gap-1 py-3 text-secondary hover:text-accent-blue data-[state=active]:bg-accent-blue/10 data-[state=active]:text-accent-blue data-[state=active]:!text-accent-blue tab-hover-effect"
+                    className="flex flex-col items-center gap-1 py-2 text-secondary hover:text-accent-blue data-[state=active]:bg-accent-blue/10 data-[state=active]:text-accent-blue data-[state=active]:!text-accent-blue tab-hover-effect"
                   >
-                    <TrendingUp className="w-4 h-4" />
+                    <TrendingUp className="w-6 h-6" />
                     <span className="text-xs font-medium hidden md:inline">Top Gainers</span>
                   </TabsTrigger>
                 </TooltipTrigger>
@@ -97,9 +97,9 @@ export function ZoraCoinsExplorer() {
                 <TooltipTrigger asChild>
                   <TabsTrigger
                     value="volume"
-                    className="flex flex-col items-center gap-1 py-3 text-secondary hover:text-accent-blue data-[state=active]:bg-accent-blue/10 data-[state=active]:text-accent-blue data-[state=active]:!text-accent-blue tab-hover-effect"
+                    className="flex flex-col items-center gap-1 py-2 text-secondary hover:text-accent-blue data-[state=active]:bg-accent-blue/10 data-[state=active]:text-accent-blue data-[state=active]:!text-accent-blue tab-hover-effect"
                   >
-                    <BarChart3 className="w-4 h-4" />
+                    <BarChart3 className="w-6 h-6" />
                     <span className="text-xs font-medium hidden md:inline">Top Volume</span>
                   </TabsTrigger>
                 </TooltipTrigger>
@@ -113,9 +113,9 @@ export function ZoraCoinsExplorer() {
                 <TooltipTrigger asChild>
                   <TabsTrigger
                     value="valuable"
-                    className="flex flex-col items-center gap-1 py-3 text-secondary hover:text-accent-blue data-[state=active]:bg-accent-blue/10 data-[state=active]:text-accent-blue data-[state=active]:!text-accent-blue tab-hover-effect"
+                    className="flex flex-col items-center gap-1 py-2 text-secondary hover:text-accent-blue data-[state=active]:bg-accent-blue/10 data-[state=active]:text-accent-blue data-[state=active]:!text-accent-blue tab-hover-effect"
                   >
-                    <Trophy className="w-4 h-4" />
+                    <Trophy className="w-6 h-6" />
                     <span className="text-xs font-medium hidden md:inline">Most Valuable</span>
                   </TabsTrigger>
                 </TooltipTrigger>
@@ -129,9 +129,9 @@ export function ZoraCoinsExplorer() {
                 <TooltipTrigger asChild>
                   <TabsTrigger
                     value="creators"
-                    className="flex flex-col items-center gap-1 py-3 text-secondary hover:text-accent-blue data-[state=active]:bg-accent-blue/10 data-[state=active]:text-accent-blue data-[state=active]:!text-accent-blue tab-hover-effect"
+                    className="flex flex-col items-center gap-1 py-2 text-secondary hover:text-accent-blue data-[state=active]:bg-accent-blue/10 data-[state=active]:text-accent-blue data-[state=active]:!text-accent-blue tab-hover-effect"
                   >
-                    <Users className="w-4 h-4" />
+                    <Users className="w-6 h-6" />
                     <span className="text-xs font-medium hidden md:inline">Creator Coin</span>
                   </TabsTrigger>
                 </TooltipTrigger>
@@ -145,9 +145,9 @@ export function ZoraCoinsExplorer() {
                 <TooltipTrigger asChild>
                   <TabsTrigger
                     value="favorites"
-                    className="flex flex-col items-center gap-1 py-3 text-secondary hover:text-accent-blue data-[state=active]:bg-accent-blue/10 data-[state=active]:text-accent-blue data-[state=active]:!text-accent-blue tab-hover-effect"
+                    className="flex flex-col items-center gap-1 py-2 text-secondary hover:text-accent-blue data-[state=active]:bg-accent-blue/10 data-[state=active]:text-accent-blue data-[state=active]:!text-accent-blue tab-hover-effect"
                   >
-                    <Heart className="w-4 h-4" />
+                    <Heart className="w-6 h-6" />
                     <span className="text-xs font-medium hidden md:inline">Favorites</span>
                   </TabsTrigger>
                 </TooltipTrigger>
@@ -161,13 +161,13 @@ export function ZoraCoinsExplorer() {
         </div>
 
         {/* Tab Title Display */}
-        <div className="px-4 py-1 border-b border-card-dark">
+        <div className="px-4 py-0.5 border-b border-card-dark">
           <h2 className="text-sm font-medium text-secondary text-center">
             {getTabTitle(activeTab)}
           </h2>
         </div>
 
-        <div className="mt-4 tab-content-transition">
+        <div className="tab-content-transition">
           <TabsContent value="gainers" className="mt-0">
             <CoinList type="TOP_GAINERS" />
           </TabsContent>

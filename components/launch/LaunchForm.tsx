@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { ImageUpload } from "./ImageUpload";
 import { RealTokenDisplay } from "./RealTokenDisplay";
 import { useDeployment } from "@/hooks/use-deployment";
-import { useNetworkInfo } from "@/hooks/use-network-info";
+import { useNetworkInfo } from "@/hooks/use-network-info.tsx";
 import { useAccount, useSwitchChain, useConnect } from "wagmi";
 import { AlertTriangle, Rocket, ExternalLink, CheckCircle, Zap, Network, Shield, DollarSign, Info, ChevronDown, ChevronRight, Monitor, Wallet } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -58,10 +58,13 @@ export function LaunchForm() {
 
   // Función para cambiar de red
   const handleNetworkChange = async (chainId: number) => {
+    console.log("🔄 Switching to chain:", chainId);
+    console.log("🔄 Current chain:", networkInfo.chainId);
     try {
       await switchChain({ chainId });
+      console.log("✅ Successfully switched to chain:", chainId);
     } catch (error) {
-      console.error("Error switching network:", error);
+      console.error("❌ Error switching network:", error);
     }
   };
 
@@ -320,20 +323,23 @@ export function LaunchForm() {
         <CardHeader>
           <CardTitle className="flex flex-col items-center gap-3">
             <div className="flex items-center gap-2">
-              <div className="h-5 w-5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-xs font-bold">Z</span>
-              </div>
-              <span className="text-sm text-secondary">Deploy in Zora Ecosystem</span>
+              <img src="/icozora.png" alt="Zora" className="h-5 w-5" />
+              <span className="text-sm text-secondary">Deploy your Coin in Base</span>
             </div>
             <div className="flex flex-col items-center gap-2">
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => handleNetworkChange(networkInfo.chainId === 8453 ? 84532 : 8453)}
+                onClick={() => {
+                  const targetChainId = networkInfo.chainId === 8453 ? 84532 : 8453;
+                  console.log("🖱️ Button clicked - switching from", networkInfo.chainId, "to", targetChainId);
+                  handleNetworkChange(targetChainId);
+                }}
                 className="flex items-center gap-2 px-3 py-1"
               >
-                <Monitor className="h-4 w-4" />
-                {networkInfo.icon}
+                <div className="w-4 h-4 bg-white rounded-full flex items-center justify-center">
+                  <img src="/base.png" alt="Base" className="w-4 h-4" />
+                </div>
                 <span className="font-medium">{networkInfo.name}</span>
               </Button>
               <Badge variant="default" className={`${networkInfo.chainId === 8453 ? 'bg-purple-600' : 'bg-orange-600'}`}>
@@ -342,7 +348,7 @@ export function LaunchForm() {
             </div>
           </CardTitle>
           <CardDescription>
-            Complete all fields to create your token on the blockchain.
+            Complete all fields to create your Coin.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -485,7 +491,7 @@ export function LaunchForm() {
             {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full bg-gradient-to-r from-accent-blue to-accent-blue/80 hover:from-accent-blue/90 hover:to-accent-blue/70 text-primary"
+              className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white"
               disabled={!isConnected || isDeploying || !isSupportedChain}
               size="lg"
             >
@@ -578,9 +584,21 @@ export function LaunchForm() {
             )}
 
             {isConnected && isSupportedChain && (
-              <p className="text-center text-sm text-price-positive">
-                ✅ Ready to create your token
-              </p>
+              <div className="text-center">
+                <div className="text-xs text-secondary mb-2">Creator Rewards</div>
+                <div className="bg-card-dark/50 rounded-lg p-2 text-xs">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-secondary">Recipient</span>
+                    <span className="text-secondary">Market Rewards</span>
+                    <span className="text-secondary">Total Fees</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-primary font-medium">Creator</span>
+                    <span className="text-price-positive font-medium">62.5%</span>
+                    <span className="text-price-positive font-medium">50%</span>
+                  </div>
+                </div>
+              </div>
             )}
           </form>
         </CardContent>

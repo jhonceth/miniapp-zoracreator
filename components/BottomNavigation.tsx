@@ -187,7 +187,7 @@ export function BottomNavigation() {
       )}
 
       <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-card-dark shadow-lg bg-card-dark/50 backdrop-blur supports-[backdrop-filter]:bg-card-dark/70">
-        <div className="max-w-4xl mx-auto px-4 py-2">
+        <div className="max-w-4xl mx-auto px-4 py-1">
           <div className="flex items-center justify-around">
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -195,7 +195,7 @@ export function BottomNavigation() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex flex-col items-center gap-1 py-2 px-4 rounded-lg transition-colors duration-200 ${
+                  className={`flex flex-col items-center gap-1 py-1 px-4 rounded-lg transition-colors duration-200 ${
                     item.active
                       ? "text-accent-blue bg-accent-blue/10"
                       : "text-primary hover:text-accent-blue hover:bg-accent-blue/5"

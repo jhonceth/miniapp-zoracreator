@@ -25,13 +25,13 @@ export function useNetworkInfo() {
     if (chainId === 8453) {
       return {
         name: "Base Mainnet",
-        icon: <Shield className="h-3 w-3" />,
+        icon: <img src="/base.png" alt="Base" className="h-3 w-3" />,
         color: "default"
       }
     } else if (chainId === 84532) {
       return {
         name: "Base Sepolia", 
-        icon: <Network className="h-3 w-3" />,
+        icon: <img src="/base.png" alt="Base" className="h-3 w-3" />,
         color: "secondary"
       }
     } else {
