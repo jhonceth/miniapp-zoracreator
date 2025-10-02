@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { ImageUpload } from "./ImageUpload";
 import { RealTokenDisplay } from "./RealTokenDisplay";
 import { useDeployment } from "@/hooks/use-deployment";
-import { useNetworkInfo } from "@/hooks/use-network-info.tsx";
+import { useNetworkInfo } from "@/hooks/use-network-info";
 import { useAccount, useSwitchChain, useConnect } from "wagmi";
 import { AlertTriangle, Rocket, ExternalLink, CheckCircle, Zap, Network, Shield, DollarSign, Info, ChevronDown, ChevronRight, Monitor, Wallet } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
