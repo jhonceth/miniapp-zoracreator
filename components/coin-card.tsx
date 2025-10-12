@@ -1,7 +1,7 @@
 "use client"
 
 import type { ZoraCoin } from "@/lib/types/zora"
-import { TrendingUp, TrendingDown, Copy, Heart, DollarSign, Activity, Users } from "lucide-react"
+import { TrendingUp, TrendingDown, Copy, Star, DollarSign, Activity, Users } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useState, useEffect } from "react"
@@ -32,7 +32,7 @@ export function CoinCard({ coin, isFavorite = false, onToggleFavorite, rank }: C
   const price = Number.parseFloat(coin.priceUsd)
   const changePercent = coin.changePercent24h
 
-  const isPositive = changePercent !== null && changePercent > 0
+  const isPositive = changePercent !== null && changePercent !== undefined && typeof changePercent === 'number' && changePercent > 0
 
   const formatCurrency = (value: number) => {
     if (value >= 1_000_000) {
@@ -124,7 +124,7 @@ export function CoinCard({ coin, isFavorite = false, onToggleFavorite, rank }: C
               }}
               title={isFavorite ? "Remove from favorites" : "Add to favorites"}
             >
-              <Heart className={`w-4 h-4 ${isFavorite ? "fill-price-negative text-price-negative" : "text-secondary"}`} />
+              <Star className={`w-4 h-4 ${isFavorite ? "fill-yellow-400 text-yellow-400" : "text-secondary"}`} />
             </Button>
           </div>
         </div>
@@ -137,7 +137,7 @@ export function CoinCard({ coin, isFavorite = false, onToggleFavorite, rank }: C
               <p className="text-sm text-secondary">{coin.symbol}</p>
             </div>
 
-            {changePercent !== null && (
+            {changePercent !== null && changePercent !== undefined && (
               <div
                 className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium ${
                   isPositive
@@ -148,7 +148,7 @@ export function CoinCard({ coin, isFavorite = false, onToggleFavorite, rank }: C
                 {isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                 <span>
                   {isPositive ? "+" : ""}
-                  {changePercent.toFixed(2)}%
+                  {typeof changePercent === 'number' ? changePercent.toFixed(2) : '0.00'}%
                 </span>
               </div>
             )}

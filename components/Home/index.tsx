@@ -10,8 +10,6 @@ import { Badge } from "@/components/ui/badge";
 import { Rocket, Zap, Shield, CheckCircle, Wallet, Share2 } from "lucide-react";
 import { UserMenu } from "@/components/UserMenu";
 import { BottomNavigation } from "@/components/BottomNavigation";
-import { FeatureCarousel } from "@/components/FeatureCarousel";
-import { WalletConnection } from "@/components/WalletConnection";
 import SearchBar from "@/components/SearchBar";
 import { ZoraCoinsExplorer } from "@/components/zora-coins-explorer";
 

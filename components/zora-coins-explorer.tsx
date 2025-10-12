@@ -7,7 +7,7 @@ import { CoinList } from "./coin-list"
 import { FavoritesList } from "./favorites-list"
 import { CreatorsList } from "./creators-list"
 import { PriceMarquee } from "./price-marquee"
-import { TrendingUp, BarChart3, Trophy, Heart, Users } from "lucide-react"
+import { TrendingUp, BarChart3, Trophy, Star, Users } from "lucide-react"
 
 export function ZoraCoinsExplorer() {
   const [activeTab, setActiveTab] = useState("gainers")
@@ -147,7 +147,7 @@ export function ZoraCoinsExplorer() {
                     value="favorites"
                     className="flex flex-col items-center gap-1 py-2 text-secondary hover:text-accent-blue data-[state=active]:bg-accent-blue/10 data-[state=active]:text-accent-blue data-[state=active]:!text-accent-blue tab-hover-effect"
                   >
-                    <Heart className="w-6 h-6" />
+                    <Star className="w-6 h-6" />
                     <span className="text-xs font-medium hidden md:inline">Favorites</span>
                   </TabsTrigger>
                 </TooltipTrigger>

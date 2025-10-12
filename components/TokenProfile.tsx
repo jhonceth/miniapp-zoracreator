@@ -42,6 +42,7 @@ import {
   Circle,
   TrendingDown as VolumeIcon,
   UserCheck as HoldersIcon,
+  Star,
 } from "lucide-react";
 import { UpdateURIModal } from "@/components/UpdateURIModal";
 import { UpdatePayoutRecipientModal } from "@/components/UpdatePayoutRecipientModal";
@@ -49,6 +50,8 @@ import TradingCoins from "@/components/TradingCoins";
 import TimeSeriesChart from "@/components/TimeSeriesChart";
 import CandlestickChart from "@/components/CandlestickChart";
 import { useCreatorProfileLazy } from "@/hooks/use-creator-profile-lazy";
+import { useFavorites } from "@/hooks/use-favorites";
+import type { ZoraCoin } from "@/lib/types/zora";
 
 interface TokenProfileProps {
   address: string;
@@ -57,6 +60,7 @@ interface TokenProfileProps {
 export function TokenProfile({ address }: TokenProfileProps) {
   const { address: userAddress, isConnected } = useAccount();
   const router = useRouter();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const [coin, setCoin] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -65,7 +69,7 @@ export function TokenProfile({ address }: TokenProfileProps) {
   const [isUpdatePayoutModalOpen, setIsUpdatePayoutModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'stats' | 'creator'>('stats');
   const [activeChartTab, setActiveChartTab] = useState<'timeseries' | 'candlestick'>('timeseries');
-  const [selectedPeriod, setSelectedPeriod] = useState<'1W' | '1M' | '3M' | '1Y' | 'ALL' | 'daily' | 'weekly' | 'monthly'>('1M');
+  const [selectedPeriod, setSelectedPeriod] = useState<'1D' | '1W' | '1M' | '3M' | '1Y' | 'ALL'>('1M');
   
   // Estados para datos de gráficos
   const [seriesData, setSeriesData] = useState<any[]>([]);
@@ -157,62 +161,37 @@ export function TokenProfile({ address }: TokenProfileProps) {
       setRawApiResponse(null);
       
       console.log('🔍 Obteniendo datos de la API para:', address);
+      console.log('🔍 Estado actual - seriesError:', seriesError, 'isLoadingSeries:', isLoadingSeries);
       
-      // Mapear timeframes a parámetros de la API
-      const timeframeMap = {
-        '1W': '1W',
-        '1M': '1M',
-        '3M': '3M',
-        '1Y': '1Y',
-        'ALL': 'ALL',
-        'daily': '1W',    // Legacy: daily -> 1W
-        'weekly': '1M',   // Legacy: weekly -> 1M  
-        'monthly': '3M'   // Legacy: monthly -> 3M
-      };
+        // Usar la nueva API de Zora para obtener datos de precio con timeframe
+        const priceHistoryUrl = `/api/zora/price-history?address=${address}&chainId=8453&timeframe=${selectedPeriod}`;
+        console.log('🌐 Fetching price history from Zora API:', priceHistoryUrl);
       
-      const timeframe = timeframeMap[selectedPeriod] || '1M';
-      console.log('📊 Using timeframe:', timeframe);
+      const response = await fetch(priceHistoryUrl);
+      console.log('📡 Price history response status:', response.status);
       
-      // Cargar datos para TimeSeries usando el sistema modular
-      const seriesUrl = `/api/charts/data?contractAddress=${address}&network=base&timeframe=${timeframe}&chartType=line`;
-      console.log('🌐 Fetching series data from:', seriesUrl);
+      const data = await response.json();
+      console.log('📊 Price history response:', data);
+      console.log('📊 Response success:', data.success);
+      console.log('📊 Chart data length:', data.chartData?.length || 0);
       
-      const seriesResponse = await fetch(seriesUrl);
-      console.log('📡 Series response status:', seriesResponse.status);
-      
-      const seriesData = await seriesResponse.json();
-      console.log('📊 Series data response:', seriesData);
-      
-      // Cargar datos para Candlestick usando el sistema modular
-      const candlestickUrl = `/api/charts/data?contractAddress=${address}&network=base&timeframe=${timeframe}&chartType=candlestick`;
-      console.log('🌐 Fetching candlestick data from:', candlestickUrl);
-      
-      const candlestickResponse = await fetch(candlestickUrl);
-      console.log('📡 Candlestick response status:', candlestickResponse.status);
-      
-      const candlestickData = await candlestickResponse.json();
-      console.log('📊 Candlestick data response:', candlestickData);
-      
-      if (seriesData.success && seriesData.chartData) {
-        setSeriesData(seriesData.chartData);
-        setRawSeriesResponse(seriesData);
-        console.log('✅ TimeSeries data loaded:', seriesData.chartData.length, 'points');
-        console.log('📈 Sample series data:', seriesData.chartData.slice(0, 3));
+      if (data.success && data.chartData && data.chartData.length > 0) {
+        // Usar los mismos datos para ambos gráficos (TimeSeries y Candlestick)
+        setSeriesData(data.chartData);
+        setApiData(data.chartData);
+        setRawSeriesResponse(data);
+        setRawApiResponse(data);
+        // Limpiar errores cuando los datos se cargan correctamente
+        setSeriesError(null);
+        setApiError(null);
+        console.log('✅ Price history data loaded:', data.chartData.length, 'points');
+        console.log('📈 Sample price data:', data.chartData.slice(0, 3));
       } else {
-        setSeriesError(seriesData.error || 'Unable to load price chart data. This token may be too new or have limited trading activity.');
-        console.error('❌ TimeSeries error:', seriesData.error);
-        console.error('❌ Full series response:', seriesData);
-      }
-      
-      if (candlestickData.success && candlestickData.chartData) {
-        setApiData(candlestickData.chartData);
-        setRawApiResponse(candlestickData);
-        console.log('✅ Candlestick data loaded:', candlestickData.chartData.length, 'points');
-        console.log('📊 Sample candlestick data:', candlestickData.chartData.slice(0, 3));
-      } else {
-        setApiError(candlestickData.error || 'Unable to load candlestick chart data. This token may be too new or have limited trading activity.');
-        console.error('❌ Candlestick error:', candlestickData.error);
-        console.error('❌ Full candlestick response:', candlestickData);
+        const errorMessage = data.error || 'No price history data available for this token. This token may be too new or have limited trading activity.';
+        setSeriesError(errorMessage);
+        setApiError(errorMessage);
+        console.error('❌ Price history error:', data.error);
+        console.error('❌ Full price history response:', data);
       }
       
     } catch (error) {
@@ -220,6 +199,12 @@ export function TokenProfile({ address }: TokenProfileProps) {
       setSeriesError(errorMessage);
       setApiError(errorMessage);
       console.error('❌ Error loading chart data:', error);
+      console.error('❌ Error details:', {
+        message: errorMessage,
+        address,
+        selectedPeriod,
+        url: `/api/zora/price-history?address=${address}&chainId=8453&timeframe=${selectedPeriod}`
+      });
     } finally {
       setIsLoadingSeries(false);
       setIsLoadingApi(false);
@@ -260,6 +245,21 @@ export function TokenProfile({ address }: TokenProfileProps) {
 
   const isAdmin = userAddress && coin?.creatorAddress && 
     userAddress.toLowerCase() === coin.creatorAddress.toLowerCase();
+
+  // Convert coin data to ZoraCoin format for favorites
+  const tokenAsZoraCoin: ZoraCoin | null = coin ? {
+    address: coin.address,
+    name: coin.name,
+    symbol: coin.symbol,
+    imageUrl: coin.mediaContent?.previewImage?.medium || null,
+    marketCap: coin.marketCap,
+    volume24h: coin.volume24h,
+    marketCapDelta24h: coin.marketCapDelta24h,
+    priceUsd: coin.tokenPrice?.priceInUsdc || "0",
+    uniqueHolders: coin.uniqueHolders,
+    createdAt: coin.createdAt || "",
+    changePercent24h: coin.changePercent24h
+  } : null;
 
   if (!isConnected) {
     return (
@@ -401,7 +401,16 @@ export function TokenProfile({ address }: TokenProfileProps) {
                 <div className="flex items-center gap-2">
                   <h1 className="text-lg font-bold text-primary truncate">{coin.name}</h1>
                   <span className="text-sm font-medium text-secondary">({coin.symbol})</span>
-                    </div>
+                  {tokenAsZoraCoin && (
+                    <button
+                      onClick={() => toggleFavorite(tokenAsZoraCoin)}
+                      className="p-2 bg-card-dark/60 hover:bg-card-dark/80 rounded-full transition-all duration-200 hover:scale-105"
+                      title={isFavorite(coin.address) ? "Remove from favorites" : "Add to favorites"}
+                    >
+                      <Star className={`h-4 w-4 ${isFavorite(coin.address) ? "fill-yellow-400 text-yellow-400" : "text-secondary"}`} />
+                    </button>
+                  )}
+                </div>
                 <div className="flex items-center gap-2 mt-1">
                   <div className="flex items-center gap-1 bg-card-dark px-2 py-1 rounded-md">
                     <img src="/base.png" alt="Base" className="w-3 h-3" />
@@ -651,9 +660,9 @@ export function TokenProfile({ address }: TokenProfileProps) {
                 </div>
 
                 {/* Gráficos de precios */}
-                <div className="mt-6 mb-8">
-                  <Card className="bg-card-dark border-card-dark">
-                    <CardHeader className="pb-2">
+                <div className="mt-6 mb-8 -mx-4">
+                  <Card className="bg-transparent border-none shadow-none">
+                    <CardHeader className="px-4 pb-2">
                       <CardTitle className="flex items-center gap-2 text-primary">
                         <BarChart3 className="w-5 h-5" />
                         Charts
@@ -661,7 +670,7 @@ export function TokenProfile({ address }: TokenProfileProps) {
                     </CardHeader>
                     <CardContent className="p-0">
                       {/* Pestañas de gráficos */}
-                      <div className="flex space-x-1 p-4 pb-2">
+                      <div className="flex space-x-1 px-4 pb-2">
                         <button
                           onClick={() => setActiveChartTab('timeseries')}
                           className={`px-4 py-2 text-sm font-medium rounded-md transition-colors flex items-center gap-2 ${
@@ -695,11 +704,7 @@ export function TokenProfile({ address }: TokenProfileProps) {
                                 data={seriesData}
                     contractAddress={address}
                                 selectedPeriod={selectedPeriod}
-                                onPeriodChange={(period) => {
-                                  setSelectedPeriod(period);
-                                  // Recargar automáticamente al cambiar el período
-                                  setTimeout(() => loadDataFromAPI(), 100);
-                                }}
+                                onPeriodChange={setSelectedPeriod}
                                 onFetchData={() => loadDataFromAPI()}
                                 isLoading={isLoadingSeries}
                                 error={seriesError}
@@ -712,7 +717,15 @@ export function TokenProfile({ address }: TokenProfileProps) {
                             <div className="text-center py-8 px-4">
                               <div className="text-sm text-secondary">
                                 {isLoadingSeries ? 'Loading chart data...' : 
-                                 seriesError ? seriesError : 
+                                 seriesError ? (
+                                   <>
+                                     <span className="text-red-500">⚠️ {seriesError}</span>
+                                     <br />
+                                     <span className="text-xs text-muted-foreground">
+                                       Debug: seriesError={seriesError}, isLoadingSeries={isLoadingSeries.toString()}, dataLength={seriesData.length}
+                                     </span>
+                                   </>
+                                 ) : 
                                  'No chart data available for this token.'}
                               </div>
                             </div>
@@ -728,11 +741,7 @@ export function TokenProfile({ address }: TokenProfileProps) {
                                 data={apiData}
                                 contractAddress={address}
                                 selectedPeriod={selectedPeriod}
-                                onPeriodChange={(period) => {
-                                  setSelectedPeriod(period);
-                                  // Recargar automáticamente al cambiar el período
-                                  setTimeout(() => loadDataFromAPI(), 100);
-                                }}
+                                onPeriodChange={setSelectedPeriod}
                                 onFetchData={() => loadDataFromAPI()}
                                 isLoading={isLoadingApi}
                                 error={apiError}

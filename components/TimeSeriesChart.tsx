@@ -1,13 +1,13 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { createChart, ColorType, BaselineSeries, HistogramSeries, createImageWatermark, createTextWatermark } from 'lightweight-charts'; // ✅ Import correcto
+import { createChart, ColorType, AreaSeries, LineSeries, HistogramSeries, createImageWatermark, createTextWatermark } from 'lightweight-charts'; // ✅ Import correcto
 
 interface TimeSeriesChartProps {
   data: any[];
   contractAddress: string;
-  selectedPeriod?: '1W' | '1M' | '3M' | '1Y' | 'ALL' | 'daily' | 'weekly' | 'monthly';
-  onPeriodChange?: (period: '1W' | '1M' | '3M' | '1Y' | 'ALL' | 'daily' | 'weekly' | 'monthly') => void;
+  selectedPeriod?: '1D' | '1W' | '1M' | '3M' | '1Y' | 'ALL';
+  onPeriodChange?: (period: '1D' | '1W' | '1M' | '3M' | '1Y' | 'ALL') => void;
   onFetchData?: () => void;
   isLoading?: boolean;
   error?: string | null;
@@ -68,8 +68,8 @@ export default function TimeSeriesChart({
 
     const chart = createChart(containerRef.current, {
       layout: { 
-        textColor: 'black', 
-        background: { type: ColorType.Solid, color: 'white' },
+        textColor: 'white', 
+        background: { type: ColorType.Solid, color: '#141C2E' },
         attributionLogo: false, // ✅ Oculta el logo de TradingView
         fontSize: fontSize
       },
@@ -117,7 +117,7 @@ export default function TimeSeriesChart({
           labelVisible: false,
         },
       },
-      // hide the grid lines
+      // hide the grid lines and borders
       grid: {
         vertLines: {
           visible: false,
@@ -126,6 +126,7 @@ export default function TimeSeriesChart({
           visible: false,
         },
       },
+      // Quitar bordes del gráfico
       handleScroll: {
         mouseWheel: true,
         pressedMouseMove: true,
@@ -139,19 +140,10 @@ export default function TimeSeriesChart({
       },
     });
 
-    // Calculate baseline value (average of all data points)
-    const baselineValue = data.length > 0 
-      ? data.reduce((sum, point) => sum + (parseFloat(point.value) || 0), 0) / data.length 
-      : 0;
-
-    const baselineSeries = chart.addSeries(BaselineSeries, {
-      baseValue: { type: 'price', price: baselineValue },
-      topLineColor: 'rgba(38, 166, 154, 1)',
-      topFillColor1: 'rgba(38, 166, 154, 0.28)',
-      topFillColor2: 'rgba(38, 166, 154, 0.05)',
-      bottomLineColor: 'rgba(239, 83, 80, 1)',
-      bottomFillColor1: 'rgba(239, 83, 80, 0.05)',
-      bottomFillColor2: 'rgba(239, 83, 80, 0.28)',
+    const areaSeries = chart.addSeries(AreaSeries, {
+      lineColor: 'rgba(38, 166, 154, 1)', // Verde para la línea
+      topColor: 'rgba(168, 85, 247, 0.8)', // Púrpura fuerte en picos
+      bottomColor: 'rgba(168, 85, 247, 0.0)', // TRANSPARENCIA TOTAL - se fusiona con el fondo
       crosshairMarkerVisible: true,
       priceFormat: {
         type: 'price',
@@ -161,6 +153,20 @@ export default function TimeSeriesChart({
       lastValueVisible: true,
       priceLineVisible: true,
       lineWidth: isMobile ? 1 : 2, // Línea más delgada en móvil
+    });
+
+    // Agregar serie de líneas con colores dinámicos (verde/rojo)
+    const lineSeries = chart.addSeries(LineSeries, {
+      color: 'rgba(38, 166, 154, 1)', // Color por defecto (verde)
+      lineWidth: isMobile ? 3 : 4, // Línea más gruesa
+      crosshairMarkerVisible: true,
+      priceFormat: {
+        type: 'price',
+        precision: isMobile ? 4 : 8,
+        minMove: 0.00000001,
+      },
+      lastValueVisible: true,
+      priceLineVisible: true,
     });
 
     // Add volume series
@@ -237,7 +243,23 @@ export default function TimeSeriesChart({
       };
     }
 
-    baselineSeries.setData(uniqueLineData);
+    areaSeries.setData(uniqueLineData);
+
+    // Crear datos con colores dinámicos para la serie de líneas
+    const lineDataWithColors = uniqueLineData.map((point, index) => {
+      if (index === 0) return point;
+      
+      const prevPoint = uniqueLineData[index - 1];
+      const currentPrice = parseFloat(point.value) || 0;
+      const prevPrice = parseFloat(prevPoint.value) || 0;
+      
+      return {
+        ...point,
+        color: currentPrice > prevPrice ? 'rgba(38, 166, 154, 1)' : 'rgba(239, 83, 80, 1)' // Verde si sube, rojo si baja
+      };
+    });
+
+    lineSeries.setData(lineDataWithColors);
     
     // Función para calcular el color de las barras de volumen
     const getVolumeColor = (open: number, close: number): string => {
@@ -333,7 +355,7 @@ export default function TimeSeriesChart({
         // thus it will be YYYY-MM-DD
         const dateStr = param.time;
         toolTip.style.display = 'block';
-        const seriesData = param.seriesData.get(baselineSeries);
+        const seriesData = param.seriesData.get(areaSeries);
         
         // Get the real price from the original data
         let price = null;
@@ -479,23 +501,27 @@ export default function TimeSeriesChart({
       <div className="flex flex-col items-start justify-between mb-2 gap-2 sm:flex-row sm:items-center sm:mb-4 sm:gap-4">
         <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-4">
           
-          {/* Period Selector */}
+          {/* Period Selector - Horizontal Buttons */}
           {onPeriodChange && (
             <div className="w-full sm:w-auto">
-              <label className="block text-xs font-medium text-secondary mb-1">
+              <label className="block text-xs font-medium text-secondary mb-2">
                 📅 Period:
               </label>
-              <select
-                value={selectedPeriod}
-                onChange={(e) => onPeriodChange(e.target.value as any)}
-                className="w-full sm:w-auto px-2 py-1 text-xs border border-card-dark rounded-md bg-card-dark text-primary focus:outline-none focus:ring-2 focus:ring-accent-blue focus:border-transparent"
-              >
-                <option value="1W" disabled>1W (Soon)</option>
-                <option value="1M">1M</option>
-                <option value="3M" disabled>3M (Soon)</option>
-                <option value="1Y" disabled>1Y (Soon)</option>
-                <option value="ALL" disabled>All (Soon)</option>
-              </select>
+              <div className="flex flex-wrap gap-1">
+                {(['1D', '1W', '1M', '3M', '1Y', 'ALL'] as const).map((period) => (
+                  <button
+                    key={period}
+                    onClick={() => onPeriodChange(period)}
+                    className={`px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 ${
+                      selectedPeriod === period
+                        ? 'bg-accent-blue text-white shadow-sm'
+                        : 'bg-card-dark text-secondary hover:bg-card-dark/80 hover:text-primary border border-card-dark'
+                    }`}
+                  >
+                    {period}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
         </div>

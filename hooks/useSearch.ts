@@ -1,12 +1,13 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { SearchService } from '../lib/services/searchService';
+import { UnifiedSearchResult } from '../lib/services/searchService';
 
 export const useSearch = () => {
-  const [results, setResults] = useState<any[]>([]);
+  const [results, setResults] = useState<UnifiedSearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const searchProfiles = useCallback(async (searchText: string, first: number = 10, retryCount: number = 0) => {
+  const searchProfiles = useCallback(async (searchText: string, retryCount: number = 0) => {
     if (!searchText || searchText.length < 3) {
       setResults([]);
       setError(null);
@@ -17,72 +18,76 @@ export const useSearch = () => {
     setError(null);
 
     try {
-      const response = await SearchService.searchProfiles(searchText, first);
+      const response = await SearchService.unifiedSearch(searchText);
       
-      if (response.success) {
-        // Filtrar solo perfiles que tienen creatorCoin.address
-        const filteredResults = response.data
-          .map((edge: any) => edge.node)
-          .filter((profile: any) => profile?.creatorCoin?.address);
+      console.log('🔍 useSearch received data:', response.length);
+      
+      // Debug específico para "Base is for everyone"
+      const baseToken = response.find(r => r.name?.includes('Base is for everyone'));
+      if (baseToken) {
+        console.log('🎯 BASE IS FOR EVERYONE found in useSearch:');
+        console.log('  change24h:', baseToken.change24h);
+        console.log('  volume24h:', baseToken.volume24h);
+        console.log('  totalVolume:', baseToken.totalVolume);
+        console.log('  Complete:', JSON.stringify(baseToken, null, 2));
+      }
+      
+      setResults(response);
+      
+      // Si no hay resultados, mostrar mensaje amigable
+      if (response.length === 0) {
+        setError(`No results found for "${searchText}"`);
+      }
+      
+    } catch (err) {
+      console.error('Search error:', err);
+      
+      // Detectar errores de rate limit
+      const isRateLimit = err instanceof Error && (
+        err.message.includes('rate') || 
+        err.message.includes('429') || 
+        err.message.includes('Too Many Requests') ||
+        err.message.includes('Connection error') ||
+        err.message.includes('503') ||
+        err.message.includes('Service temporarily unavailable')
+      );
+      
+      if (isRateLimit && retryCount < 2) {
+        console.log(`🔄 Rate limit detected, retrying in 3 seconds (attempt ${retryCount + 1}/2)`);
         
-        setResults(filteredResults);
+        // No mostrar error inmediatamente para rate limits
+        setError(null);
         
-        // Si no hay resultados después del filtro, mostrar mensaje amigable
-        if (filteredResults.length === 0) {
-          setError('No profiles with tokens found');
-        }
+        // Esperar 3 segundos y reintentar
+        setTimeout(() => {
+          searchProfiles(searchText, retryCount + 1);
+        }, 3000);
+        
+        return; // No hacer setLoading(false) aquí porque va a reintentar
       } else {
-        // Verificar si es un error de rate limit
-        if (response.error && response.error.includes('Ratelimit exceeded')) {
-          const retryAfter = response.error.match(/after (\d+\.?\d*) seconds/);
-          const delay = retryAfter ? parseFloat(retryAfter[1]) * 1000 : 3000; // 3 segundos por defecto
-          
-          if (retryCount < 2) { // Máximo 2 reintentos
-            console.log(`Rate limit exceeded, retrying in ${delay}ms... (attempt ${retryCount + 1})`);
-            setTimeout(() => {
-              searchProfiles(searchText, first, retryCount + 1);
-            }, delay);
-            return;
-          } else {
-            setError('Rate limit exceeded. Please try again in a few moments.');
-          }
+        // Después de 2 reintentos o error diferente a rate limit
+        if (isRateLimit) {
+          setError('Internal search error. Please try again.');
+        } else if (err instanceof Error && err.message.includes('Failed to fetch')) {
+          setError('Connection error. Please check your internet and try again.');
         } else {
-          setError(response.error);
+          setError('Search failed. Please try again.');
         }
+        
         setResults([]);
       }
-    } catch (err) {
-      // Manejar errores de red de forma más amigable
-      if (err instanceof Error && err.message.includes('503')) {
-        setError('Service temporarily unavailable. Please try again later.');
-      } else if (err instanceof Error && err.message.includes('Failed to fetch')) {
-        setError('Connection error. Please check your internet and try again.');
-      } else if (err instanceof Error && err.message.includes('Ratelimit exceeded')) {
-        const retryAfter = err.message.match(/after (\d+\.?\d*) seconds/);
-        const delay = retryAfter ? parseFloat(retryAfter[1]) * 1000 : 3000;
-        
-        if (retryCount < 2) {
-          console.log(`Rate limit exceeded, retrying in ${delay}ms... (attempt ${retryCount + 1})`);
-          setTimeout(() => {
-            searchProfiles(searchText, first, retryCount + 1);
-          }, delay);
-          return;
-        } else {
-          setError('Rate limit exceeded. Please try again in a few moments.');
-        }
-      } else {
-        setError('Error searching profiles. Please try again.');
-      }
-      setResults([]);
     } finally {
-      setLoading(false);
+      // Solo hacer setLoading(false) si es la primera vez o no es rate limit
+      if (retryCount === 0) {
+        setLoading(false);
+      }
     }
   }, []);
 
   return {
-    searchProfiles,
     results,
     loading,
-    error
+    error,
+    searchProfiles,
   };
 };

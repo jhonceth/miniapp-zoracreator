@@ -6,8 +6,8 @@ import { createChart, CandlestickSeries, createTextWatermark, ColorType } from '
 interface CandlestickChartProps {
   data: any[];
   contractAddress: string;
-  selectedPeriod?: '1W' | '1M' | '3M' | '1Y' | 'ALL' | 'daily' | 'weekly' | 'monthly';
-  onPeriodChange?: (period: '1W' | '1M' | '3M' | '1Y' | 'ALL' | 'daily' | 'weekly' | 'monthly') => void;
+  selectedPeriod?: '1D' | '1W' | '1M' | '3M' | '1Y' | 'ALL';
+  onPeriodChange?: (period: '1D' | '1W' | '1M' | '3M' | '1Y' | 'ALL') => void;
   onFetchData?: () => void;
   isLoading?: boolean;
   error?: string | null;
@@ -263,23 +263,27 @@ export default function CandlestickChart({
       <div className="flex flex-col items-start justify-between mb-2 gap-2 sm:flex-row sm:items-center sm:mb-4 sm:gap-4">
         <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-4">
           
-          {/* Period Selector */}
+          {/* Period Selector - Horizontal Buttons */}
           {onPeriodChange && (
             <div className="w-full sm:w-auto">
-              <label className="block text-xs font-medium text-white mb-1 sm:text-sm sm:mb-2">
+              <label className="block text-xs font-medium text-white mb-2 sm:text-sm">
                 📅 Data Period:
               </label>
-              <select
-                value={selectedPeriod}
-                onChange={(e) => onPeriodChange(e.target.value as any)}
-                className="w-full sm:w-auto px-3 py-2 text-sm border border-gray-600 rounded-md bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              >
-                <option value="1W" disabled>1 Week (Premium Soon)</option>
-                <option value="1M">1 Month</option>
-                <option value="3M" disabled>3 Months (Premium Soon)</option>
-                <option value="1Y" disabled>1 Year (Premium Soon)</option>
-                <option value="ALL" disabled>All Time (Premium Soon)</option>
-              </select>
+              <div className="flex flex-wrap gap-1">
+                {(['1D', '1W', '1M', '3M', '1Y', 'ALL'] as const).map((period) => (
+                  <button
+                    key={period}
+                    onClick={() => onPeriodChange(period)}
+                    className={`px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 ${
+                      selectedPeriod === period
+                        ? 'bg-green-500 text-white shadow-sm'
+                        : 'bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white border border-gray-600'
+                    }`}
+                  >
+                    {period}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
         </div>

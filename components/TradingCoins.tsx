@@ -98,6 +98,17 @@ export default function TradingCoins({
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [slippageSaved, setSlippageSaved] = useState(false);
 
+  // Update sellType when activeTab changes
+  useEffect(() => {
+    setTradeState(prev => ({
+      ...prev,
+      sellType: activeTab === 'buy' ? 'eth' : 'erc20',
+      sellAmount: '', // Clear amount when switching tabs
+      error: null,
+      success: null
+    }));
+  }, [activeTab]);
+
   // Fetch ETH price
   useEffect(() => {
     const fetchEthPrice = async () => {

@@ -3,8 +3,12 @@ import { getCoinsTopGainers, getCoinsTopVolume24h, getCoinsMostValuable, setApiK
 import type { ZoraCoin, ZoraCoinNode } from "@/lib/types/zora"
 
 if (process.env.ZORA_API_KEY) {
+  console.log("🔑 Setting Zora API Key:", process.env.ZORA_API_KEY.substring(0, 20) + "...")
   setApiKey(process.env.ZORA_API_KEY)
+} else {
+  console.error("❌ ZORA_API_KEY environment variable not found!")
 }
+
 
 function calculateChangePercent(marketCap: string, marketCapDelta24h: string): number | null {
   const currentMarketCap = Number.parseFloat(marketCap)
@@ -112,18 +116,25 @@ export async function GET(request: NextRequest) {
   const fetchCount = Math.max(requestedCount * 3, 60)
 
   try {
+    console.log("🔧 Environment check:", {
+      ZORA_API_KEY: process.env.ZORA_API_KEY ? "Present" : "Missing",
+      ZORA_GRAPHQL_ENDPOINT: process.env.ZORA_GRAPHQL_ENDPOINT || "Not set"
+    })
     console.log("[v0] Fetching coins - type:", type, "requested:", requestedCount, "fetching:", fetchCount, "after:", after)
 
     let response
 
     switch (type) {
       case "TOP_GAINERS":
+        console.log("[v0] Calling getCoinsTopGainers with params:", { count: fetchCount, after })
         response = await getCoinsTopGainers({ count: fetchCount, after })
         break
       case "TOP_VOLUME_24H":
+        console.log("[v0] Calling getCoinsTopVolume24h with params:", { count: fetchCount, after })
         response = await getCoinsTopVolume24h({ count: fetchCount, after })
         break
       case "MOST_VALUABLE":
+        console.log("[v0] Calling getCoinsMostValuable with params:", { count: fetchCount, after })
         response = await getCoinsMostValuable({ count: fetchCount, after })
         break
       default:
