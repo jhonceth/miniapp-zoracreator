@@ -38,44 +38,89 @@ interface ZoraPriceHistoryResponse {
   }>
 }
 
-async function fetchTokenPriceHistory(address: string, chainId: number): Promise<ZoraPriceHistoryResponse> {
-  console.log("[v0] Fetching price history for token:", address, "chainId:", chainId)
+// Función para hacer delay
+function delay(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+// Función para extraer tiempo de retry del error 429
+function extractRetryAfter(errorBody: string): number {
+  try {
+    const parsed = JSON.parse(errorBody)
+    if (parsed.detail && parsed.detail.includes('try again after')) {
+      const match = parsed.detail.match(/try again after (\d+\.?\d*) seconds/)
+      if (match) {
+        return Math.ceil(parseFloat(match[1]) * 1000) // Convertir a ms y redondear hacia arriba
+      }
+    }
+  } catch (e) {
+    // Si no se puede parsear, usar delay por defecto
+  }
+  return 3000 // 3 segundos por defecto
+}
+
+async function fetchTokenPriceHistory(address: string, chainId: number, retryCount = 0): Promise<ZoraPriceHistoryResponse> {
+  const maxRetries = 3
+  console.log(`[v0] Fetching price history for token: ${address}, chainId: ${chainId}, attempt: ${retryCount + 1}`)
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     Accept: "application/json",
   }
 
-  const response = await fetch(env.ZORA_GRAPHQL_ENDPOINT, {
-    method: "POST",
-    headers,
-    body: JSON.stringify({
-      query: PRICE_HISTORY_QUERY,
-      variables: {
-        address,
-        chainId,
-      },
-    }),
-  })
-
-  if (!response.ok) {
-    const errorText = await response.text()
-    console.error("[v0] API Error:", {
-      status: response.status,
-      statusText: response.statusText,
-      body: errorText,
+  try {
+    const response = await fetch(env.ZORA_GRAPHQL_ENDPOINT, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        query: PRICE_HISTORY_QUERY,
+        variables: {
+          address,
+          chainId,
+        },
+      }),
     })
-    throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`)
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      
+      // Manejar rate limiting (429)
+      if (response.status === 429 && retryCount < maxRetries) {
+        const retryAfter = extractRetryAfter(errorText)
+        console.log(`[v0] Rate limit exceeded, retrying after ${retryAfter}ms (attempt ${retryCount + 1}/${maxRetries})`)
+        await delay(retryAfter)
+        return fetchTokenPriceHistory(address, chainId, retryCount + 1)
+      }
+      
+      console.error("[v0] API Error:", {
+        status: response.status,
+        statusText: response.statusText,
+        body: errorText,
+        retryCount
+      })
+      throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`)
+    }
+
+    const data: ZoraPriceHistoryResponse = await response.json()
+
+    if (data.errors && data.errors.length > 0) {
+      console.error("[v0] GraphQL errors:", data.errors)
+      throw new Error(`GraphQL errors: ${JSON.stringify(data.errors)}`)
+    }
+
+    return data
+  } catch (error) {
+    // Re-throw si es el último intento
+    if (retryCount >= maxRetries) {
+      throw error
+    }
+    
+    // Retry con backoff exponencial para otros errores
+    const backoffDelay = Math.pow(2, retryCount) * 1000 // 1s, 2s, 4s
+    console.log(`[v0] Request failed, retrying after ${backoffDelay}ms (attempt ${retryCount + 1}/${maxRetries})`)
+    await delay(backoffDelay)
+    return fetchTokenPriceHistory(address, chainId, retryCount + 1)
   }
-
-  const data: ZoraPriceHistoryResponse = await response.json()
-
-  if (data.errors && data.errors.length > 0) {
-    console.error("[v0] GraphQL errors:", data.errors)
-    throw new Error(`GraphQL errors: ${JSON.stringify(data.errors)}`)
-  }
-
-  return data
 }
 
 // Función para agregar datos según timeframe
@@ -167,16 +212,28 @@ export async function GET(request: NextRequest) {
     const response = await fetchTokenPriceHistory(address, chainId)
 
     if (!response.data?.zora20Token) {
+      console.log("[v0] Token not found in Zora API:", { address, chainId })
       return NextResponse.json({
         success: false,
-        error: "Token not found or no price history available",
-        data: null
+        error: "Token not found or no price history available. This token may be too new or have limited trading activity.",
+        data: null,
+        chartData: []
       })
     }
 
     const priceHistory = response.data.zora20Token.priceHistory || []
     
     console.log("[v0] Received", priceHistory.length, "price history points")
+    
+    if (priceHistory.length === 0) {
+      console.log("[v0] No price history data available for token:", { address, chainId })
+      return NextResponse.json({
+        success: false,
+        error: "No price history data available for this token. This token may be too new or have limited trading activity.",
+        data: response.data,
+        chartData: []
+      })
+    }
 
     // Formatear datos para el gráfico
     const allFormattedData = priceHistory.map((point) => {
@@ -229,13 +286,22 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error("[v0] Error fetching price history:", error)
+    const errorMessage = error instanceof Error ? error.message : "Unknown error"
+    
+    // Detectar si es un error de rate limiting
+    const isRateLimitError = errorMessage.includes('429') || errorMessage.includes('Ratelimit exceeded')
+    
     return NextResponse.json(
       {
         success: false,
-        error: "Failed to fetch price history",
-        details: error instanceof Error ? error.message : "Unknown error",
+        error: isRateLimitError 
+          ? "Rate limit exceeded. Please try again in a few moments."
+          : `Failed to fetch price history: ${errorMessage}`,
+        details: errorMessage,
+        chartData: [],
+        isRateLimit: isRateLimitError
       },
-      { status: 500 }
+      { status: isRateLimitError ? 429 : 500 }
     )
   }
 }

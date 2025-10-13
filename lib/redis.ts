@@ -1,38 +1,29 @@
-import { createClient } from "redis";
+import { Redis } from "@upstash/redis";
 import { env } from "@/lib/env";
 
-let redis: ReturnType<typeof createClient> | null = null;
+let redis: Redis | null = null;
 
-// Función para inicializar Redis de forma segura
+// Función para inicializar Upstash Redis de forma segura
 function initializeRedis() {
   if (redis) return redis;
   
-  if (!env.REDIS_URL) {
+  if (!env.REDIS_URL || !env.REDIS_TOKEN) {
     console.warn(
-      "REDIS_URL environment variable is not defined, please add to enable caching.",
+      "REDIS_URL and REDIS_TOKEN environment variables are required for Upstash Redis.",
     );
     return null;
   }
 
   try {
-    redis = createClient({
+    redis = new Redis({
       url: env.REDIS_URL,
-      ...(env.REDIS_URL.startsWith('rediss://') && {
-        socket: {
-          tls: true,
-          rejectUnauthorized: false
-        }
-      })
+      token: env.REDIS_TOKEN,
     });
 
-    // Conectar Redis si está disponible
-    redis.connect().catch((error) => {
-      console.error('Redis connection error:', error);
-    });
-
+    console.log('✅ Upstash Redis initialized successfully');
     return redis;
   } catch (error) {
-    console.error('Failed to create Redis client:', error);
+    console.error('Failed to create Upstash Redis client:', error);
     return null;
   }
 }

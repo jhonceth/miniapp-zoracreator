@@ -5,8 +5,8 @@ import { z } from "zod";
 export const env = createEnv({
   server: {
     JWT_SECRET: z.string().min(1),
-    REDIS_URL: z.string().min(1),
-    REDIS_TOKEN: z.string().min(1),
+    REDIS_URL: z.string().min(1).default("https://kind-alpaca-23493.upstash.io"),
+    REDIS_TOKEN: z.string().min(1).default("AVvFAAIncDJjOTkzN2I1YTQ3MjE0MDc0OTAwOGIwOTc2NTBmN2Q3N3AyMjM0OTM"),
     ETHERSCAN_API_KEY: z.string().min(1),
     NEYNAR_API_KEY: z.string().min(1),
     THEGRAPH_API_KEY: z.string().optional().default(""),

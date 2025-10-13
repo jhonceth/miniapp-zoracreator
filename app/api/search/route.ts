@@ -179,21 +179,25 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Ordenar resultados por volumen y relevancia
+    // Ordenar resultados por volumen y relevancia (coincidencias al final)
     const sortedTokens = tokens.sort((a, b) => {
       const aVolume = a.volume24h || 0;
       const bVolume = b.volume24h || 0;
       
+      // Primero ordenar por volumen
       if (aVolume > 0 && bVolume === 0) return -1;
       if (aVolume === 0 && bVolume > 0) return 1;
       if (aVolume > 0 && bVolume > 0) return bVolume - aVolume;
       
+      // Luego por coincidencia: coincidencias al final
       const aMatch = a.name?.toLowerCase().includes(query.toLowerCase()) || false;
       const bMatch = b.name?.toLowerCase().includes(query.toLowerCase()) || false;
       
-      if (aMatch && !bMatch) return -1;
-      if (!aMatch && bMatch) return 1;
+      // Coincidencias al final (return 1 para que aparezcan después)
+      if (aMatch && !bMatch) return 1;
+      if (!aMatch && bMatch) return -1;
       
+      // Si ambos coinciden o ninguno coincide, ordenar alfabéticamente
       return a.name.localeCompare(b.name);
     });
 

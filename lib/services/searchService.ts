@@ -165,22 +165,26 @@ export class SearchService {
       }
 
 
-      // Ordenar por volumen primero, luego por coincidencia de nombre
+      // Ordenar por volumen primero, luego por coincidencia de nombre (coincidencias al final)
       const sortedResults = results.sort((a, b) => {
         const aVolume = a.volume24h || 0;
         const bVolume = b.volume24h || 0;
         
+        // Primero ordenar por volumen
         if (aVolume > 0 && bVolume === 0) return -1;
         if (aVolume === 0 && bVolume > 0) return 1;
         if (aVolume > 0 && bVolume > 0) return bVolume - aVolume;
         
+        // Luego por coincidencia: coincidencias al final
         const aMatch = a.name?.toLowerCase().includes(searchText.toLowerCase()) || false;
         const bMatch = b.name?.toLowerCase().includes(searchText.toLowerCase()) || false;
         
-        if (aMatch && !bMatch) return -1;
-        if (!aMatch && bMatch) return 1;
+        // Coincidencias al final (return 1 para que aparezcan después)
+        if (aMatch && !bMatch) return 1;
+        if (!aMatch && bMatch) return -1;
         
-        return 0;
+        // Si ambos coinciden o ninguno coincide, ordenar alfabéticamente
+        return a.name.localeCompare(b.name);
       });
 
       console.log('✅ Final results:', sortedResults.length, 'tokens processed');

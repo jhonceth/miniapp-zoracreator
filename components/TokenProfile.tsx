@@ -187,11 +187,22 @@ export function TokenProfile({ address }: TokenProfileProps) {
         console.log('✅ Price history data loaded:', data.chartData.length, 'points');
         console.log('📈 Sample price data:', data.chartData.slice(0, 3));
       } else {
-        const errorMessage = data.error || 'No price history data available for this token. This token may be too new or have limited trading activity.';
+        let errorMessage = data.error || 'No price history data available for this token. This token may be too new or have limited trading activity.';
+        
+        // Manejar específicamente rate limiting
+        if (data.isRateLimit) {
+          errorMessage = 'Rate limit exceeded. Please wait a moment and try again.';
+          console.log('⏳ Rate limit exceeded, user should wait and retry');
+        }
+        
         setSeriesError(errorMessage);
         setApiError(errorMessage);
         console.error('❌ Price history error:', data.error);
         console.error('❌ Full price history response:', data);
+        
+        if (!data.isRateLimit) {
+          console.log('💡 This is normal for new tokens or tokens with limited trading activity');
+        }
       }
       
     } catch (error) {
