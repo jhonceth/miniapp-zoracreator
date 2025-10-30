@@ -18,7 +18,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       <ErudaProvider>
         <MiniAppWalletProvider>
           <MiniAppProvider addMiniAppOnLoad={true}>
-            <UserProvider autoSignIn={true}>{children}</UserProvider>
+            <UserProvider autoSignIn={false}>{children}</UserProvider>
           </MiniAppProvider>
         </MiniAppWalletProvider>
       </ErudaProvider>
@@ -28,7 +28,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <MiniAppWalletProvider>
       <MiniAppProvider addMiniAppOnLoad={true}>
-        <UserProvider autoSignIn={true}>{children}</UserProvider>
+        <UserProvider autoSignIn={false}>{children}</UserProvider>
       </MiniAppProvider>
     </MiniAppWalletProvider>
   );

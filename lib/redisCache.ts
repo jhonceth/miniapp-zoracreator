@@ -15,7 +15,7 @@ export async function setCache(key: string, value: any, ttlSeconds: number = 30)
   try {
     const redis = getRedis();
     if (!redis) return;
-    await redis.setEx(key, ttlSeconds, JSON.stringify(value));
+    await redis.setex(key, ttlSeconds, JSON.stringify(value));
   } catch {
     // si falla cache no rompe la app
   }

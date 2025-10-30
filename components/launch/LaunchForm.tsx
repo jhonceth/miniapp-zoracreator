@@ -151,7 +151,7 @@ export function LaunchForm() {
     }
 
     if (!isConnected) {
-      setValidationErrors({ general: "Por favor conecta tu wallet primero" })
+      setValidationErrors({ general: "Please connect your wallet first" })
       return
     }
 
@@ -190,7 +190,7 @@ export function LaunchForm() {
     }
 
     if (!isConnected) {
-      setValidationErrors({ general: "Por favor conecta tu wallet primero" })
+      setValidationErrors({ general: "Please connect your wallet first" })
       return
     }
 
@@ -246,10 +246,10 @@ export function LaunchForm() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-orange-800 dark:text-orange-200">
               <Wallet className="h-5 w-5" />
-              Conectar Wallet de Farcaster
+              Connect Farcaster Wallet
             </CardTitle>
             <CardDescription className="text-orange-700 dark:text-orange-300">
-              Conecta tu wallet de Farcaster para poder crear tokens en Base
+              Connect your Farcaster wallet to create tokens on Base
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -262,12 +262,12 @@ export function LaunchForm() {
                   className="w-full"
                   variant="outline"
                 >
-                  {isConnecting ? "Conectando..." : `Conectar con ${connector.name}`}
+                  {isConnecting ? "Connecting..." : `Connect with ${connector.name}`}
                 </Button>
               ))}
             </div>
             <p className="text-xs text-orange-600 dark:text-orange-400 mt-4">
-              Usa la wallet integrada de Farcaster para la mejor experiencia
+              Use the integrated Farcaster wallet for the best experience
             </p>
           </CardContent>
         </Card>
@@ -573,7 +573,7 @@ export function LaunchForm() {
 
             {!isConnected && (
               <p className="text-center text-sm text-accent-blue">
-                🔗 Conecta tu wallet de Farcaster para continuar
+                🔗 Connect your Farcaster wallet to continue
               </p>
             )}
 

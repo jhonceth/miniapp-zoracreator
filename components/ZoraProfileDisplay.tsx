@@ -73,8 +73,8 @@ export function ZoraProfileDisplay({ className = "" }: ZoraProfileDisplayProps) 
       <Card>
         <CardContent className="py-8 text-center">
           <Wallet className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-xl font-bold mb-2">Wallet Desconectada</h2>
-          <p className="text-gray-600">Conecta tu wallet para ver tu perfil de Zora</p>
+          <h2 className="text-xl font-bold mb-2">Wallet Disconnected</h2>
+          <p className="text-gray-600">Connect your wallet to view your Zora profile</p>
         </CardContent>
       </Card>
     );

@@ -386,13 +386,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ addr
         {/* Gráfico de fondo - solo si no hay imagen */}
         {/* MiniChartSVG removido - ahora usamos solo la línea blanca */}
         
-        {/* Top Left Icon */}
+        {/* Top Right Icon */}
         <div
           style={{
             display: "flex",
             position: "absolute",
             top: "20px",
-            left: "20px",
+            right: "20px",
             zIndex: 2,
           }}
         >

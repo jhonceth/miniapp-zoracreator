@@ -1,7 +1,7 @@
 import { useApiMutation } from "@/hooks/use-api-mutation";
 import { useApiQuery } from "@/hooks/use-api-query";
 import { NeynarUser } from "@/lib/neynar";
-import sdk from "@farcaster/miniapp-sdk";
+import { sdk } from "@farcaster/miniapp-sdk";
 import { QueryObserverResult } from "@tanstack/react-query";
 import {
   createContext,
@@ -115,8 +115,21 @@ export const UserProvider = ({
         referrerFid,
         token: result.token,
       });
-    } catch {
-      setError(new Error("Failed to sign in"));
+    } catch (err) {
+      console.error("Sign in error:", err);
+      
+      // Handle specific error types
+      if (err instanceof Error) {
+        if (err.message.includes("SignIn.RejectedByUser") || err.message.includes("rejected by user")) {
+          setError(new Error("Sign in was cancelled. You can try again when you're ready."));
+        } else if (err.message.includes("Not in mini app")) {
+          setError(new Error("Please open this app in Farcaster to sign in."));
+        } else {
+          setError(new Error("Failed to sign in. Please try again."));
+        }
+      } else {
+        setError(new Error("Failed to sign in. Please try again."));
+      }
     } finally {
       setIsLoading(false);
     }

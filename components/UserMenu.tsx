@@ -5,6 +5,9 @@ import Image from "next/image";
 import { useUser } from "@/contexts/user-context";
 import { useAccount } from "wagmi";
 import { useWeb3BioProfile } from "@/hooks/use-web3-bio-profile";
+import { useFarcasterContext } from "@/hooks/use-farcaster-context";
+import { useFarcasterPrimaryAddress } from "@/hooks/use-farcaster-primary-address";
+import { SignInPrompt } from "@/components/SignInPrompt";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -17,7 +20,7 @@ import {
   ChevronDown,
   LogOut,
   Zap,
-  Globe
+  Globe,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -27,8 +30,29 @@ interface UserMenuProps {
 
 export function UserMenu({ className = "" }: UserMenuProps) {
   const { user, signOut } = useUser();
-  const { address, isConnected } = useAccount();
+  const { address, isConnected: isWagmiConnected } = useAccount();
   const { profile: web3BioProfile } = useWeb3BioProfile(address);
+  
+  // Farcaster SDK Context
+  const { 
+    context: farcasterContext, 
+    isLoading: farcasterLoading, 
+    error: farcasterError,
+    user: farcasterUser,
+    location: farcasterLocation,
+    client: farcasterClient,
+    features: farcasterFeatures
+  } = useFarcasterContext();
+  
+  // Farcaster Primary Address
+  const { 
+    primaryAddress, 
+    isLoading: addressLoading, 
+    error: addressError,
+    fid 
+  } = useFarcasterPrimaryAddress();
+  
+  
   const [isOpen, setIsOpen] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
@@ -37,9 +61,11 @@ export function UserMenu({ className = "" }: UserMenuProps) {
     user: user?.data,
     isLoading: user?.isLoading,
     error: user?.error,
-    isConnected,
+    isWagmiConnected,
     address,
-    web3BioProfile
+    web3BioProfile,
+    farcasterUser,
+    primaryAddress
   });
 
   const copyToClipboard = async (text: string, field: string) => {
@@ -60,38 +86,42 @@ export function UserMenu({ className = "" }: UserMenuProps) {
     window.open(`https://basescan.org/address/${address}`, '_blank');
   };
 
-  // No mostrar el menú si no hay usuario autenticado
-  if (!user?.data) {
-    return null;
-  }
+  // Mostrar el menú siempre, pero con diferentes opciones según el estado de conexión
+  const isConnected = !!(user?.data || farcasterUser);
 
-  // Usar datos del contexto de Farcaster como base
-  const userData = user.data;
+  // Priorizar datos del SDK de Farcaster sobre el contexto de usuario tradicional
+  const userData = user?.data;
   
   // Usar datos de web3.bio si están disponibles
   const farcasterProfile = web3BioProfile?.farcaster;
   const ensProfile = web3BioProfile?.ens;
   const ethereumProfile = web3BioProfile?.ethereum;
 
-  // Priorizar datos según la lógica: Farcaster > ENS > Ethereum
-  const displayName = farcasterProfile?.displayName || 
+  // Priorizar datos según la lógica: Farcaster SDK > Farcaster Profile > ENS > Ethereum > User Data
+  const displayName = farcasterUser?.displayName ||
+                     farcasterProfile?.displayName || 
                      ensProfile?.displayName || 
                      ethereumProfile?.displayName || 
-                     userData.display_name || 
-                     userData.username || 
-                     `Usuario ${userData.fid}`;
+                     userData?.display_name || 
+                     userData?.username || 
+                     `Usuario ${farcasterUser?.fid || userData?.fid}`;
 
-  const username = farcasterProfile?.identity || 
+  const username = farcasterUser?.username ||
+                  farcasterProfile?.identity || 
                   ensProfile?.identity || 
                   ethereumProfile?.identity || 
-                  userData.username || 
-                  `user${userData.fid}`;
+                  userData?.username || 
+                  `user${farcasterUser?.fid || userData?.fid}`;
 
-  const avatarUrl = farcasterProfile?.avatar || 
+  const avatarUrl = farcasterUser?.pfpUrl ||
+                   farcasterProfile?.avatar || 
                    ensProfile?.avatar || 
                    ethereumProfile?.avatar || 
-                   userData.pfp_url || 
+                   userData?.pfp_url || 
                    '/icon.png';
+
+  // Usar FID del SDK de Farcaster si está disponible
+  const userFid = farcasterUser?.fid || userData?.fid;
 
   return (
     <div className={`relative ${className}`}>
@@ -153,18 +183,6 @@ export function UserMenu({ className = "" }: UserMenuProps) {
                     <Badge className="bg-accent-blue/20 text-accent-blue border-accent-blue/30 text-xs">
                       @{username}
                     </Badge>
-                    {farcasterProfile && (
-                      <Badge className="bg-accent-blue/20 text-accent-blue border-accent-blue/30 text-xs">
-                        <Zap className="w-2 h-2 mr-1" />
-                        Farcaster
-                      </Badge>
-                    )}
-                    {ensProfile && (
-                      <Badge className="bg-price-positive/20 text-price-positive border-price-positive/30 text-xs">
-                        <Globe className="w-2 h-2 mr-1" />
-                        ENS
-                      </Badge>
-                    )}
                   </div>
                 </div>
               </div>
@@ -179,11 +197,11 @@ export function UserMenu({ className = "" }: UserMenuProps) {
                   <span className="text-sm font-medium text-secondary">FID</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-mono text-primary">{userData.fid}</span>
+                  <span className="text-sm font-mono text-primary">{userFid}</span>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => copyToClipboard(userData.fid.toString(), "fid")}
+                    onClick={() => copyToClipboard(userFid?.toString() || "", "fid")}
                     className="h-6 w-6 p-0"
                   >
                     {copiedField === "fid" ? (
@@ -194,6 +212,48 @@ export function UserMenu({ className = "" }: UserMenuProps) {
                   </Button>
                 </div>
               </div>
+
+
+              {/* Primary Address from Farcaster API */}
+              {primaryAddress && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Wallet className="w-4 h-4 text-accent-blue" />
+                    <span className="text-sm font-medium text-secondary">Primary Address</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-2 bg-card-dark/50 rounded-lg">
+                    <div className="flex-1">
+                      <p className="text-xs font-mono text-primary break-all">
+                        {formatAddress(primaryAddress.address)}
+                      </p>
+                      <p className="text-xs text-secondary">{primaryAddress.protocol.toUpperCase()}</p>
+                    </div>
+                    <div className="flex items-center gap-1 ml-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => copyToClipboard(primaryAddress.address, "primary-address")}
+                        className="h-6 w-6 p-0"
+                      >
+                        {copiedField === "primary-address" ? (
+                          <CheckCircle className="h-3 w-3 text-price-positive" />
+                        ) : (
+                          <Copy className="h-3 w-3" />
+                        )}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openInExplorer(primaryAddress.address)}
+                        className="h-6 w-6 p-0"
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Wallet Address */}
               {isConnected && address && (
@@ -250,26 +310,35 @@ export function UserMenu({ className = "" }: UserMenuProps) {
               )}
             </div>
 
+
             {/* Actions */}
             <div className="border-t border-card-dark p-4 space-y-2">
-              <Link href="/profile">
-                <Button
-                  variant="outline"
-                  className="w-full flex items-center gap-2 text-accent-blue border-accent-blue/20 hover:bg-accent-blue/5"
-                >
-                  <Zap className="w-4 h-4" />
-                  View My Complete Profile
-                </Button>
-              </Link>
-              
-              <Button
-                variant="outline"
-                onClick={signOut}
-                className="w-full flex items-center gap-2 text-price-negative border-price-negative/20 hover:bg-price-negative/5"
-              >
-                <LogOut className="w-4 h-4" />
-                Sign Out
-              </Button>
+              {isConnected ? (
+                <>
+                  <Link href="/profile">
+                    <Button
+                      variant="outline"
+                      className="w-full flex items-center gap-2 text-accent-blue border-accent-blue/20 hover:bg-accent-blue/5"
+                    >
+                      <Zap className="w-4 h-4" />
+                      View My Complete Profile
+                    </Button>
+                  </Link>
+                  
+                  <Button
+                    variant="outline"
+                    onClick={signOut}
+                    className="w-full flex items-center gap-2 text-price-negative border-price-negative/20 hover:bg-price-negative/5"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Sign Out
+                  </Button>
+                </>
+              ) : (
+                <div className="space-y-2">
+                  <SignInPrompt />
+                </div>
+              )}
             </div>
           </div>
         </>

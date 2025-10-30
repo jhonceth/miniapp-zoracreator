@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useAccount } from "wagmi";
+import { useUnifiedWallet } from "@/hooks/use-unified-wallet";
 import { useProfileCoins } from "@/hooks/use-profile-coins";
 import { UserMenu } from "@/components/UserMenu";
 import { BottomNavigation } from "@/components/BottomNavigation";
@@ -30,7 +30,7 @@ import {
 } from "lucide-react";
 
 export default function ProfilePage() {
-  const { address: userAddress, isConnected } = useAccount();
+  const { address: userAddress, isConnected, isLoading: walletLoading, addressSource } = useUnifiedWallet();
   const { createdCoins, profileData, isLoading, error, refetch } = useProfileCoins();
   const coinsCount = createdCoins.length;
 
@@ -72,24 +72,6 @@ export default function ProfilePage() {
     window.open(`https://basescan.org/token/${address}`, '_blank');
   };
 
-  if (!isConnected) {
-    return (
-      <div className="bg-gradient-to-br from-[#0A0F1C] to-[#101A2D] text-primary min-h-screen p-4">
-        <div className="max-w-4xl mx-auto text-center py-12">
-          <Wallet className="w-16 h-16 text-accent-blue mx-auto mb-4" />
-          <h2 className="text-2xl font-bold mb-2 text-primary">Wallet not connected</h2>
-          <p className="text-secondary mb-6">
-            Please connect your wallet to view your profile and created tokens.
-          </p>
-          <Link href="/">
-            <Button className="bg-gradient-to-r from-accent-blue to-accent-blue/80 hover:from-accent-blue/90 hover:to-accent-blue/70 text-primary">
-              Back to Home
-            </Button>
-          </Link>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="bg-gradient-to-br from-[#0A0F1C] to-[#101A2D] text-primary min-h-screen pb-20">
@@ -98,7 +80,7 @@ export default function ProfilePage() {
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2 sm:gap-4">
             <Link href="/">
-              <Button variant="outline" size="sm" className="h-8 px-2 sm:px-3 border-card-dark bg-card-dark text-primary hover:bg-card-dark/80">
+              <Button variant="outline" size="sm" className="h-8 px-2 sm:px-3 border-accent-blue/20 bg-card-dark text-primary hover:bg-accent-blue/5">
                 <ArrowLeft className="w-4 h-4 mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">Back</span>
               </Button>
@@ -158,7 +140,7 @@ export default function ProfilePage() {
                 <h3 className="text-lg sm:text-xl font-semibold text-primary mb-2">You haven&apos;t created any tokens</h3>
                 <p className="text-sm sm:text-base text-secondary mb-4 sm:mb-6">It looks like you haven&apos;t created any Zora tokens yet. Time to get started!</p>
                 <Link href="/launch">
-                  <Button className="bg-gradient-to-r from-accent-blue to-accent-blue/80 hover:from-accent-blue/90 hover:to-accent-blue/70 text-primary h-8 sm:h-10">
+                  <Button className="bg-gradient-to-r from-accent-blue to-accent-blue/80 hover:from-accent-blue/90 hover:to-accent-blue/70 text-white h-8 sm:h-10">
                     <Zap className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
                     <span className="text-xs sm:text-sm">Create my first token</span>
                   </Button>

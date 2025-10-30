@@ -18,7 +18,7 @@ export async function getUserNotificationDetails(
   const result = await redis.get(
     getUserNotificationDetailsKey(fid)
   );
-  if (result) {
+  if (result && typeof result === 'string') {
     try {
       return JSON.parse(result) as MiniAppNotificationDetails;
     } catch {

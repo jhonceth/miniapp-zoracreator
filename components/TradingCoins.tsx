@@ -723,10 +723,10 @@ export default function TradingCoins({
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-orange-800 dark:text-orange-200">
             <Wallet className="h-5 w-5" />
-            Conectar Wallet de Farcaster
+            Connect Farcaster Wallet
           </CardTitle>
           <CardDescription className="text-orange-700 dark:text-orange-300">
-            Conecta tu wallet de Farcaster para poder hacer trading de tokens
+            Connect your Farcaster wallet to trade tokens
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -739,12 +739,12 @@ export default function TradingCoins({
                 className="w-full"
                 variant="outline"
               >
-                {isConnecting ? "Conectando..." : `Conectar con ${connector.name}`}
+                {isConnecting ? "Connecting..." : `Connect with ${connector.name}`}
               </Button>
             ))}
           </div>
           <p className="text-xs text-orange-600 dark:text-orange-400 mt-4">
-            Usa la wallet integrada de Farcaster para la mejor experiencia
+            Use the integrated Farcaster wallet for the best experience
           </p>
         </CardContent>
       </Card>

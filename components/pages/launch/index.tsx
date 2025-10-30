@@ -6,8 +6,17 @@ import { Button } from "@/components/ui/button";
 import { LaunchForm } from "@/components/launch/LaunchForm";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import { UserMenu } from "@/components/UserMenu";
+import { SignInPrompt } from "@/components/SignInPrompt";
+import { useUser } from "@/contexts/user-context";
+import { useFarcasterContext } from "@/hooks/use-farcaster-context";
 
 export default function LaunchPage() {
+  const { user, isLoading } = useUser();
+  const { context: farcasterContext, isLoading: farcasterLoading } = useFarcasterContext();
+
+  // Show sign-in prompt if user is in Farcaster context but not authenticated
+  const needsSignIn = farcasterContext && !user?.data && !isLoading && !farcasterLoading;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0A0F1C] to-[#101A2D] pb-20">
       <div className="max-w-4xl mx-auto px-4 py-4 sm:py-6">
@@ -29,10 +38,14 @@ export default function LaunchPage() {
           <UserMenu />
         </div>
 
-        {/* Launch Form */}
-        <div className="max-w-2xl mx-auto">
-          <LaunchForm />
-        </div>
+        {/* Content */}
+        {needsSignIn ? (
+          <SignInPrompt />
+        ) : (
+          <div className="max-w-2xl mx-auto">
+            <LaunchForm />
+          </div>
+        )}
       </div>
       
       {/* Bottom Navigation */}

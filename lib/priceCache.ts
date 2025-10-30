@@ -16,7 +16,7 @@ export async function setCachedPrice(key: string, value: any, ttl: number) {
   try {
     const redis = getRedis();
     if (!redis) return;
-    await redis.setEx(key, ttl, JSON.stringify(value));
+    await redis.setex(key, ttl, JSON.stringify(value));
   } catch (error) {
     console.error("Error setting to Redis cache:", error);
     // Si falla el cache, no rompe la app

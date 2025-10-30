@@ -7,7 +7,7 @@ import { CoinList } from "./coin-list"
 import { FavoritesList } from "./favorites-list"
 import { CreatorsList } from "./creators-list"
 import { PriceMarquee } from "./price-marquee"
-import { TrendingUp, BarChart3, Trophy, Star, Users } from "lucide-react"
+import { TrendingUp, BarChart3, Trophy, Star, Users, Share2 } from "lucide-react"
 
 export function ZoraCoinsExplorer() {
   const [activeTab, setActiveTab] = useState("gainers")
@@ -161,10 +161,59 @@ export function ZoraCoinsExplorer() {
         </div>
 
         {/* Tab Title Display */}
-        <div className="px-4 py-0.5 border-b border-card-dark">
-          <h2 className="text-sm font-medium text-secondary text-center">
+        <div className="px-4 py-0.5 border-b border-card-dark flex items-center justify-between">
+          <div className="flex-1"></div>
+          <h2 className="text-sm font-medium text-secondary text-center flex-1">
             {getTabTitle(activeTab)}
           </h2>
+          <div className="flex-1 flex justify-end">
+            {activeTab === "gainers" && (
+              <button
+                onClick={async () => {
+                  const base = typeof window !== 'undefined' ? window.location.origin : '';
+                  const now = new Date();
+                  const dateParam = now.toISOString().split('T')[0]; // YYYY-MM-DD para URL
+                  const shareUrl = `${base}/share/top-gainers?date=${dateParam}`;
+                  const dateStr = now.toLocaleDateString('en-US', { 
+                    day: 'numeric', 
+                    month: 'short', 
+                    year: 'numeric' 
+                  });
+                  const timeStr = now.toLocaleTimeString('en-US', { 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    hour12: true 
+                  });
+                  const text = `🔥 Top 5 Gainers in the Last 24 Hours!\n${dateStr} ${timeStr}\nBy @zbase`;
+                  const intent = `https://warpcast.com/~/compose?text=${encodeURIComponent(text)}&embeds[]=${encodeURIComponent(shareUrl)}`;
+                  
+                  // Intento con Mini App composeCast si está disponible
+                  try {
+                    // dynamic import to avoid SSR issues
+                    import("@farcaster/miniapp-sdk").then(({ sdk }) => {
+                      if (sdk?.actions?.composeCast) {
+                        sdk.actions.composeCast({
+                          text: text,
+                          embeds: [shareUrl],
+                        })
+                      } else {
+                        window.open(intent, '_blank')
+                      }
+                    }).catch(() => {
+                      window.open(intent, '_blank')
+                    })
+                  } catch {
+                    window.open(intent, '_blank')
+                  }
+                }}
+                className="p-1 hover:bg-card-dark/50 rounded-lg flex items-center gap-1"
+                title="Compartir en Farcaster"
+              >
+                <img src="/farcaster.png" alt="Farcaster" className="w-3 h-3" />
+                <Share2 className="h-3 w-3 text-secondary" />
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="tab-content-transition">

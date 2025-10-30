@@ -272,29 +272,6 @@ export function TokenProfile({ address }: TokenProfileProps) {
     changePercent24h: coin.changePercent24h
   } : null;
 
-  if (!isConnected) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-[#0A0F1C] to-[#101A2D]">
-        <div className="container mx-auto px-4 py-8">
-          <div className="max-w-md mx-auto text-center">
-            <div className="bg-card-dark rounded-2xl shadow-xl p-8">
-              <Wallet className="w-16 h-16 text-accent-blue mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-primary mb-4">Wallet Not Connected</h2>
-              <p className="text-secondary mb-6">
-                Please connect your wallet to view token details.
-              </p>
-              <Button 
-                onClick={() => router.push('/')}
-                className="w-full bg-gradient-to-r from-accent-blue to-accent-blue/80 hover:from-accent-blue/90 hover:to-accent-blue/70 text-primary"
-              >
-                Go Home
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   if (isLoading) {
     return (

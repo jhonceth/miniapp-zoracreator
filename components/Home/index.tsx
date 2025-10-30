@@ -2,6 +2,7 @@
 
 import { useUser } from "@/contexts/user-context";
 import { useAccount } from "wagmi";
+import { useFarcasterContext } from "@/hooks/use-farcaster-context";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -12,10 +13,12 @@ import { UserMenu } from "@/components/UserMenu";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import SearchBar from "@/components/SearchBar";
 import { ZoraCoinsExplorer } from "@/components/zora-coins-explorer";
+import { SignInPrompt } from "@/components/SignInPrompt";
 
 export default function Home() {
   const { user, isLoading, error, signIn } = useUser();
   const { isConnected } = useAccount();
+  const { context: farcasterContext, isLoading: farcasterLoading } = useFarcasterContext();
 
   const shareApp = async () => {
     const base = typeof window !== 'undefined' ? window.location.origin : ''
@@ -77,7 +80,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Main Content - Zora Coins Explorer */}
+      {/* Main Content */}
       <div className="flex-1 overflow-y-auto relative" style={{zIndex: 0}}>
         <ZoraCoinsExplorer />
       </div>
